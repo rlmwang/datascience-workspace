@@ -8,7 +8,7 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = datascience
-PYTHON_INTERPRETER = python3
+PYTHON = python3
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -22,12 +22,12 @@ endif
 
 ## Install Python Dependencies
 requirements: test_environment
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -U pip setuptools wheel
+	$(PYTHON) -m pip install -r requirements.txt
 
 ## Make Dataset
 data: requirements
-	$(PYTHON_INTERPRETER) $(PROJECT_NAME)/data/make_dataset.py data/raw data/processed
+	$(PYTHON) $(PROJECT_NAME)/data/make_dataset.py data/raw data/processed
 
 ## Delete all compiled Python files
 clean:
@@ -43,6 +43,10 @@ format:
 lint:
 	flake8 $(PROJECT_NAME)
 	mypy $(PROJECT_NAME)
+
+## Run test cases in tests folder
+test: 
+	$(PYTHON) -m unittest discover
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -64,7 +68,7 @@ endif
 create_environment:
 ifeq (True,$(HAS_CONDA))
 		@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
+ifeq (3,$(findstring 3,$(PYTHON)))
 	conda create --name $(PROJECT_NAME) python=3
 	conda install -n $(PROJECT_NAME) pip
 else
@@ -73,16 +77,16 @@ else
 endif
 		@echo ">>> New conda environment created. Activate with:\nconda activate $(PROJECT_NAME)"
 else
-	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
+	$(PYTHON) -m pip install -q virtualenv virtualenvwrapper
 	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
 	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
+	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON)"
 	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
 endif
 
 ## Test python environment is setup correctly
 test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
+	$(PYTHON) test_environment.py
 
 #################################################################################
 # PROJECT RULES                                                                 #
