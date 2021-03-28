@@ -6,7 +6,6 @@
 click
 Sphinx
 coverage
-awscli
 
 pre-commit
 black
