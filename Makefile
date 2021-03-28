@@ -29,7 +29,7 @@ data: requirements
 
 ## Delete all compiled Python files
 clean:
-	find . -type f -name "*.py[co]" -delete
+	find . -type f -name "*.py[cod]" -delete
 	find . -type d -name "__pycache__" -delete
 
 ## Format using black and isort
@@ -49,15 +49,14 @@ test:
 ## Set up python interpreter environment
 environment:
 ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
+	@echo ">>> Detected conda, creating conda environment."
 ifeq (3,$(findstring 3,$(PYTHON)))
 	conda create --name $(PROJECT_NAME) python=3
-	conda install -n $(PROJECT_NAME) pip
 else
 	conda create --name $(PROJECT_NAME) python=2.7
-	conda install -n $(PROJECT_NAME) pip
 endif
-		@echo ">>> New conda environment created. Activate with:\nconda activate $(PROJECT_NAME)"
+	conda install -n $(PROJECT_NAME) pip
+	@echo ">>> New conda environment created: $(PROJECT_NAME)"
 else
 	$(PYTHON) -m pip install -q virtualenv virtualenvwrapper
 	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
