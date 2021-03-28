@@ -2,9 +2,15 @@
 -e .
 
 # external requirements
+
 click
 Sphinx
 coverage
 awscli
+
+black
+isort
 flake8
+mypy
+
 python-dotenv>=0.5.1

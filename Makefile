@@ -27,16 +27,22 @@ requirements: test_environment
 
 ## Make Dataset
 data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+	$(PYTHON_INTERPRETER) $(PROJECT_NAME)/data/make_dataset.py data/raw data/processed
 
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
-## Lint using flake8
+## Format using black and isort
+format:
+	black $(PROJECT_NAME)
+	isort $(PROJECT_NAME)
+
+## Lint using flake8 and mypy
 lint:
-	flake8 src
+	flake8 $(PROJECT_NAME)
+	mypy $(PROJECT_NAME)
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -60,10 +66,12 @@ ifeq (True,$(HAS_CONDA))
 		@echo ">>> Detected conda, creating conda environment."
 ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
 	conda create --name $(PROJECT_NAME) python=3
+	conda install -n $(PROJECT_NAME) pip
 else
 	conda create --name $(PROJECT_NAME) python=2.7
+	conda install -n $(PROJECT_NAME) pip
 endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
+		@echo ">>> New conda environment created. Activate with:\nconda activate $(PROJECT_NAME)"
 else
 	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
 	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
