@@ -21,7 +21,7 @@ endif
 #################################################################################
 
 ## Install Python Dependencies
-requirements: test_environment
+requirements: 
 	$(PYTHON) -m pip install -U pip setuptools wheel
 	$(PYTHON) -m pip install -r requirements.txt
 

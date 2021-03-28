@@ -8,6 +8,7 @@ Sphinx
 coverage
 awscli
 
+pre-commit
 black
 isort
 flake8
