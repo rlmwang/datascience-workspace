@@ -1,0 +1,11 @@
+## ignore all
+**
+
+## exceptions
+!environment_dev.yaml
+!environment_prd.yaml
+
+!/datascience/**
+!/models/**
+!/test/**
+!*.py

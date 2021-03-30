@@ -1,0 +1,8 @@
+name: datascience_prd
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  
+  - click
+  - python-dotenv>=0.5.1

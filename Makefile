@@ -1,75 +1,98 @@
-.PHONY: clean data format lint test environment requirements
-
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
 
+PWD = `pwd`
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = datascience
-PYTHON = python3
 
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+DOCKER_FILE_DEV = .docker/Dockerfile-dev
+DOCKER_FILE_PRD = .docker/Dockerfile-prd
+
+DOCKER_IMAGE_DEV = $(PROJECT_NAME)-dev
+DOCKER_IMAGE_PRD = $(PROJECT_NAME)
+
+DOCKER_CONTAINER_DEV = $(PROJECT_NAME)-dev
+DOCKER_CONTAINER_PRD = $(PROJECT_NAME)
+
+JUPYTER_PORT = 8888
+
+
+#################################################################################
+# PROJECT COMMANDS                                                              #
+#################################################################################
+
+
+
 
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
 
-## Install Python Dependencies
-requirements: 
-	$(PYTHON) -m pip install -U pip setuptools wheel
-	$(PYTHON) -m pip install -r requirements.txt
+## Build dataset from source
+data:
+	python $(PROJECT_NAME)/build_data.py data/source data/external data/processed
+.PHONY: data
 
-## Make Dataset
-data: requirements
-	$(PYTHON) $(PROJECT_NAME)/data/make_dataset.py data/raw data/processed
 
-## Delete all compiled Python files
+## Remove compiled Python files
 clean:
 	find . -type f -name "*.py[cod]" -delete
 	find . -type d -name "__pycache__" -delete
+.PHONY: clean
+
 
 ## Format using black and isort
 format:
 	black $(PROJECT_NAME)
 	isort $(PROJECT_NAME)
+.PHONY: format
+
 
 ## Lint using flake8 and mypy
 lint:
 	flake8 $(PROJECT_NAME)
 	mypy $(PROJECT_NAME)
+.PHONY: lint
 
-## Run test cases in tests folder
+
+## Run unit test cases
 test: 
-	$(PYTHON) -m unittest discover
-
-## Set up python interpreter environment
-environment:
-ifeq (True,$(HAS_CONDA))
-	@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON)))
-	conda create --name $(PROJECT_NAME) python=3
-else
-	conda create --name $(PROJECT_NAME) python=2.7
-endif
-	conda install -n $(PROJECT_NAME) pip
-	@echo ">>> New conda environment created: $(PROJECT_NAME)"
-else
-	$(PYTHON) -m pip install -q virtualenv virtualenvwrapper
-	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
-	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON)"
-	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
-endif
+	python -m unittest discover
+.PHONY: test
 
 
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
+## Set up conda environment
+conda:
+	conda env create --force --file environment_dev.yml
+.PHONY: conda
 
+
+## Build development docker image
+.docker/image-dev: $(DOCKER_FILE_DEV) .dockerignore
+	docker build -t $(DOCKER_IMAGE_DEV) -f $(DOCKER_FILE_DEV) .
+	touch .docker/image-dev
+
+
+## Run development docker container
+docker-dev: .docker/image-dev
+	docker run -it --rm \
+		--volume $(PWD):/work \
+		--publish $(JUPYTER_PORT):$(JUPYTER_PORT) \
+		--name $(DOCKER_CONTAINER_DEV) $(DOCKER_IMAGE_DEV)
+.PHONY: docker-dev
+
+
+## Build production docker image
+.docker/image-prd: $(DOCKER_FILE_PRD) .dockerignore
+	docker build -t $(DOCKER_IMAGE_PRD) -f $(DOCKER_FILE_PRD) .
+	touch .docker/image-prd
+
+
+## Run production docker container
+docker-prd: .docker/image-prd
+	docker run -it --rm --name $(DOCKER_CONTAINER_PRD) $(DOCKER_IMAGE_PRD)
+.PHONY: docker-prd
 
 
 #################################################################################

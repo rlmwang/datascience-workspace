@@ -1,0 +1,15 @@
+name: datascience_dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  
+  - click
+  - python-dotenv>=0.5.1
+  - Sphinx
+  
+  - pre-commit
+  - black
+  - isort
+  - flake8
+  - mypy
