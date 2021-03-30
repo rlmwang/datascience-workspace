@@ -84,9 +84,10 @@ docker-dev: .docker/image-dev
 
 
 ## Build production docker image
-.docker/image-prd: $(DOCKER_FILE_PRD) .dockerignore
+.docker/image-prd:
 	docker build -t $(DOCKER_IMAGE_PRD) -f $(DOCKER_FILE_PRD) .
 	touch .docker/image-prd
+.PHONY: .docker/image-prd
 
 
 ## Run production docker container
