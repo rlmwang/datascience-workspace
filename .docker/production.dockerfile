@@ -13,7 +13,7 @@ RUN conda-pack -n datascience_prd -o /tmp/env.tar \
 RUN /venv/bin/conda-unpack
 
 
-FROM debian:buster
+FROM debian:buster-slim
 COPY --from=build /venv /venv
 
 #ARG UID
