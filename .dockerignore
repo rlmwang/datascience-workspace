@@ -8,4 +8,5 @@
 !/datascience/**
 !/models/prd/**
 !/test/**
+!/api/**
 !*.py

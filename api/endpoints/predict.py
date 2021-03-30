@@ -1,9 +1,8 @@
-"""
-curl -i -H "Content-Type: application/json" -X POST \
-     -d '{"x": 3.14, "y": 2}' 127.0.0.1:5000/predict
-"""
-from flask import Flask, request
+from flask import Blueprint, request
 from marshmallow import Schema, ValidationError, fields
+
+predict_api = Blueprint("predict_api", __name__)
+
 
 model = [1, 2]
 
@@ -19,15 +18,14 @@ class InputSchema(Schema):
 
 class OutputSchema(Schema):
     result = fields.Float()
+    version = fields.String()
 
 
 in_schema = InputSchema()
 out_schema = OutputSchema()
 
-app = Flask(__name__)
 
-
-@app.route("/predict", methods=["POST"])
+@predict_api.route("/predict", methods=["POST"])
 def _predict():
     json_data = request.get_json()
     try:
@@ -35,8 +33,9 @@ def _predict():
     except ValidationError as err:
         return err.messages, 422
     result = predict(model, **data)
-    return out_schema.dump({"result": result})
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", use_reloader=True, debug=True)
+    return out_schema.dump(
+        {
+            "result": result,
+            "version": "0.0.1",
+        }
+    )

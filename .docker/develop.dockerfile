@@ -16,10 +16,10 @@ RUN /venv/bin/conda-unpack
 FROM debian:buster-slim
 COPY --from=build /venv /venv
 
-#ARG UID
-#RUN useradd docker -l -u $UID -s /bin/bash -m
-#USER docker
-#ENV PATH=$PATH:/home/docker/.local/bin
+RUN groupadd -r user \
+    && useradd --no-log-init -r -g user user
+USER user
+ENV PATH=$PATH:/home/user/.local/bin
 
 WORKDIR /work
 
