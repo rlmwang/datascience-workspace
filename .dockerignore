@@ -6,6 +6,6 @@
 !environment_prd.yaml
 
 !/datascience/**
-!/models/**
+!/models/prd/**
 !/test/**
 !*.py
