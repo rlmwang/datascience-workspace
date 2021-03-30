@@ -9,7 +9,7 @@ dependencies:
   - Sphinx
   
   - flask
-  - flask-restful
+  - marshmallow
 
   - pre-commit
   - black
