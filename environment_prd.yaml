@@ -6,3 +6,6 @@ dependencies:
   
   - click
   - python-dotenv>=0.5.1
+
+  - flask
+  - flask-restful

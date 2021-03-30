@@ -1,10 +1,10 @@
 FROM continuumio/miniconda3 AS build
 
-COPY environment_prd.yaml .
-RUN conda env create -f environment_prd.yaml
+COPY environment_dev.yaml .
+RUN conda env create -f environment_dev.yaml
 RUN conda install -c conda-forge conda-pack
 
-RUN conda-pack -n datascience_prd -o /tmp/env.tar \
+RUN conda-pack -n datascience_dev -o /tmp/env.tar \
     && mkdir /venv \
     && cd /venv \
     && tar xf /tmp/env.tar \
@@ -13,7 +13,7 @@ RUN conda-pack -n datascience_prd -o /tmp/env.tar \
 RUN /venv/bin/conda-unpack
 
 
-FROM debian:buster AS runtime
+FROM debian:buster
 COPY --from=build /venv /venv
 
 #ARG UID
@@ -21,9 +21,7 @@ COPY --from=build /venv /venv
 #USER docker
 #ENV PATH=$PATH:/home/docker/.local/bin
 
-COPY . /work
 WORKDIR /work
 
 SHELL ["/bin/bash", "-c"]
 ENTRYPOINT source /venv/bin/activate && bash
-

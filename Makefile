@@ -6,14 +6,13 @@ PWD = `pwd`
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = datascience
 
-DOCKER_FILE_DEV = .docker/Dockerfile-dev
-DOCKER_FILE_PRD = .docker/Dockerfile-prd
+DOCKER_FILE_DEV = .docker/develop.dockerfile
+DOCKER_FILE_PRD = .docker/production.dockerfile
+DOCKER_FILE_FIN = .docker/release.dockerfile
 
-DOCKER_IMAGE_DEV = $(PROJECT_NAME)-dev
-DOCKER_IMAGE_PRD = $(PROJECT_NAME)
-
-DOCKER_CONTAINER_DEV = $(PROJECT_NAME)-dev
-DOCKER_CONTAINER_PRD = $(PROJECT_NAME)
+DOCKER_DEV = $(PROJECT_NAME)-dev
+DOCKER_PRD = $(PROJECT_NAME)-prd
+DOCKER_FIN = $(PROJECT_NAME)
 
 JUPYTER_PORT = 8888
 
@@ -28,6 +27,13 @@ JUPYTER_PORT = 8888
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
+
+
+## Release
+release: .docker/image-prd
+	docker build -t $(DOCKER_FIN) -f $(DOCKER_FILE_FIN) .
+.PHONY: release
+
 
 ## Build dataset from source
 data:
@@ -44,15 +50,15 @@ clean:
 
 ## Format using black and isort
 format:
-	black $(PROJECT_NAME)
-	isort $(PROJECT_NAME)
+	black .
+	isort .
 .PHONY: format
 
 
 ## Lint using flake8 and mypy
 lint:
-	flake8 $(PROJECT_NAME)
-	mypy $(PROJECT_NAME)
+	flake8 .
+	mypy .
 .PHONY: lint
 
 
@@ -64,13 +70,13 @@ test:
 
 ## Set up conda environment
 conda:
-	conda env create --force --file environment_dev.yml
+	conda env create --force --file environment_dev.yaml
 .PHONY: conda
 
 
 ## Build development docker image
 .docker/image-dev: $(DOCKER_FILE_DEV) .dockerignore
-	docker build -t $(DOCKER_IMAGE_DEV) -f $(DOCKER_FILE_DEV) .
+	docker build -t $(DOCKER_DEV) -f $(DOCKER_FILE_DEV) .
 	touch .docker/image-dev
 
 
@@ -79,20 +85,19 @@ docker-dev: .docker/image-dev
 	docker run -it --rm \
 		--volume $(PWD):/work \
 		--publish $(JUPYTER_PORT):$(JUPYTER_PORT) \
-		--name $(DOCKER_CONTAINER_DEV) $(DOCKER_IMAGE_DEV)
+		--name $(DOCKER_DEV) $(DOCKER_DEV)
 .PHONY: docker-dev
 
 
 ## Build production docker image
 .docker/image-prd:
-	docker build -t $(DOCKER_IMAGE_PRD) -f $(DOCKER_FILE_PRD) .
-	touch .docker/image-prd
+	docker build -t $(DOCKER_PRD) -f $(DOCKER_FILE_PRD) .
 .PHONY: .docker/image-prd
 
 
 ## Run production docker container
 docker-prd: .docker/image-prd
-	docker run -it --rm --name $(DOCKER_CONTAINER_PRD) $(DOCKER_IMAGE_PRD)
+	docker run -it --rm --name $(DOCKER_PRD) $(DOCKER_PRD)
 .PHONY: docker-prd
 
 
