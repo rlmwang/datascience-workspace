@@ -15,8 +15,14 @@ class Inputs(Schema):
     x = fields.Float(required=True)
     y = fields.Int(required=True)
 
+    class Meta:
+        ordered = True
+
 
 @endpoint.output("predict")
 class Output(Schema):
     result = fields.Float()
     version = fields.String()
+
+    class Meta:
+        ordered = True
