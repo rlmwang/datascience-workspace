@@ -128,11 +128,11 @@ def upload_file():
             output_template="image_output.html",
         )
 
-    if "image" not in request.files:
+    if "file" not in request.files:
         flash("No file part")
         return redirect(request.url)
 
-    file = request.files["image"]
+    file = request.files["file"]
 
     if file.filename == "":
         flash("No file selected")
