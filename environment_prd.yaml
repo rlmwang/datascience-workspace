@@ -3,10 +3,13 @@ channels:
   - conda-forge
 dependencies:
   - python=3.9
+  - pip
   
   - click
   - python-dotenv>=0.5.1
 
   - flask
+  - flask-wtf
+  - wtforms
   - marshmallow
   - gunicorn

@@ -2,7 +2,9 @@
 # GLOBALS                                                                       #
 #################################################################################
 
+VER = temp
 PWD = `pwd`
+
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = datascience
 
@@ -31,7 +33,9 @@ JUPYTER_PORT = 8888
 
 ## Release
 release: .docker/image-prd
-	docker build -t $(DOCKER_FIN) -f $(DOCKER_FILE_FIN) .
+	rm -f release*.tar
+	docker build -t $(DOCKER_FIN):$(VER) -f $(DOCKER_FILE_FIN) .
+	docker save $(DOCKER_FIN):$(VER) > release_$(VER).tar
 .PHONY: release
 
 

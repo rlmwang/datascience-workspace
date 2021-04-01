@@ -4,6 +4,10 @@ COPY environment_dev.yaml .
 RUN conda env create -f environment_dev.yaml
 RUN conda install -c conda-forge conda-pack
 
+COPY . .
+RUN conda run -n datascience_prd pip install -e .
+
+
 RUN conda-pack -n datascience_dev -o /tmp/env.tar \
     && mkdir /venv \
     && cd /venv \

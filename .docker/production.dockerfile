@@ -4,7 +4,11 @@ COPY environment_prd.yaml .
 RUN conda env create -f environment_prd.yaml
 RUN conda install -c conda-forge conda-pack
 
-RUN conda-pack -n datascience_prd -o /tmp/env.tar \
+COPY . .
+RUN conda run -n datascience_prd pip install -e .
+
+RUN conda-pack --ignore-editable-packages \
+    -n datascience_prd -o /tmp/env.tar \
     && mkdir /venv \
     && cd /venv \
     && tar xf /tmp/env.tar \
@@ -14,7 +18,6 @@ RUN /venv/bin/conda-unpack
 
 
 FROM debian:buster-slim
-COPY --from=build /venv /venv
 
 RUN groupadd -r user \
     && useradd --no-log-init -r -g user user
@@ -25,4 +28,6 @@ COPY . /work
 WORKDIR /work
 
 SHELL ["/bin/bash", "-c"]
+
+COPY --from=build /venv /venv
 ENTRYPOINT source /venv/bin/activate && bash
