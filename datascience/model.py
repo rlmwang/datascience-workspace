@@ -10,7 +10,7 @@ def predict(x: float, y: int):
     return model[0] * x + model[1] * y
 
 
-@endpoint.input("predict")
+@endpoint.inputs("predict")
 class Inputs(Schema):
     x = fields.Float(required=True)
     y = fields.Int(required=True)

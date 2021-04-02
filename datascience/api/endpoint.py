@@ -30,7 +30,7 @@ def parametrized(decorator):
 
 
 @parametrized
-def input(schema, endpoint):
+def inputs(schema, endpoint):
     inputs_schemas[endpoint] = schema()
     return schema
 
@@ -151,6 +151,7 @@ def upload_file():
         "base.html",
         inputs_template="image_inputs.html",
         output_template="image_output.html",
+        inputs=file,
         output=filepath,
     )
 
