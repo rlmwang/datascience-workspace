@@ -1,2 +1,59 @@
-{% include inputs_template %}
-{% include output_template %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <title>AWESOME</title>
+</head>
+<body>
+    <div class="mdl-layout mdl-js-layout">
+        <header class="mdl-layout__header">
+            <div class="mdl-layout-icon"></div>
+            <div class="mdl-layout__header-row">
+                <span class="mdl-layout__title">Example</span>
+                <div class="mdl-layout-spacer"></div>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/predict">predict</a>
+                </nav>
+            </div>
+        </header>
+        <div class="mdl-layout__drawer">
+            <span class="mdl-layout__title">Example</span>
+            <nav class="mdl-navigation">
+                <a class="mdl-navigation__link" href="/predict">predict</a>
+              </nav>
+        </div>
+        <main class="mdl-layout__content">
+
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--4-col">
+                    {% include inputs_template %}
+                </div>
+                <div class="mdl-cell mdl-cell--4-col">
+                    {% include output_template %}
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mdl-mini-footer">
+            <div class="mdl-mini-footer__left-section">
+              <div class="mdl-logo">
+                More Information
+              </div>
+              <ul class="mdl-mini-footer__link-list">
+                <li><a href="#">Help</a></li>
+                <li><a href="#">Privacy and Terms</a></li>
+                <li><a href="#">User Agreement</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+            <div class="mdl-mini-footer__right-section">
+              <button class="mdl-mini-footer__social-btn"></button>
+              <button class="mdl-mini-footer__social-btn"></button>
+            </div>
+          </footer> 
+    </div>
+</body>
+</html>

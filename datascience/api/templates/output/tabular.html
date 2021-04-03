@@ -1,0 +1,7 @@
+{% for field in output %}
+<li class="mdl-list__item">
+    <span class="mdl-list__item-primary-content">
+        {{ field.name }}: {{ field.value }}
+    </span>
+</li>
+{% endfor %}

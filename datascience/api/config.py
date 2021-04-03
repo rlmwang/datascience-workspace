@@ -1,6 +1,12 @@
+import os
 from pathlib import Path
 
-UPLOAD_FOLDER = "./uploads"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+SHARE_FOLDER = "share"
+INPUTS_FOLDER = os.path.join(SHARE_FOLDER, "inputs")
+OUTPUT_FOLDER = os.path.join(SHARE_FOLDER, "output")
 
-Path(UPLOAD_FOLDER).mkdir(exist_ok=True)
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "mp3"}
+
+Path(SHARE_FOLDER).mkdir(exist_ok=True)
+Path(INPUTS_FOLDER).mkdir(exist_ok=True)
+Path(OUTPUT_FOLDER).mkdir(exist_ok=True)

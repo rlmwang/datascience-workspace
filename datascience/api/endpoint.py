@@ -1,138 +1,100 @@
 import os
 
-from flask import (
-    Blueprint,
-    flash,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-)
-from marshmallow import Schema
+from flask import Blueprint, flash, redirect, render_template, request
+from marshmallow import Schema, fields
 from werkzeug.utils import secure_filename
 
 from . import config
 from .utils import field_to_html
 
 blueprints: list[Blueprint] = []
-inputs_schemas: dict[str, Schema] = {}
-output_schemas: dict[str, Schema] = {}
+ischemas: dict[str, Schema] = {}
+oschemas: dict[str, Schema] = {}
 
 
-def parametrized(decorator):
+def decorator(deco):
     def wrapper(*args, **kwargs):
-        def _decorator(func):
-            return decorator(func, *args, **kwargs)
+        def _deco(func):
+            return deco(func, *args, **kwargs)
 
-        return _decorator
+        return _deco
 
     return wrapper
 
 
-@parametrized
+@decorator
 def inputs(schema, endpoint):
-    inputs_schemas[endpoint] = schema()
+    ischemas[endpoint] = schema()
     return schema
 
 
-@parametrized
+@decorator
 def output(schema, endpoint):
-    output_schemas[endpoint] = schema()
+    oschemas[endpoint] = schema()
     return schema
 
 
-@parametrized
-def tabular(func, endpoint):
+@decorator
+def endpoint(predict, endpoint, itype, otype):
 
     blueprint = Blueprint(endpoint, __name__)
     blueprints.append(blueprint)
 
-    @blueprint.route(f"/{endpoint}", methods=["GET", "POST"])
-    def _tabular():
-        ischema = inputs_schemas.get(endpoint, None)
-        oschema = output_schemas.get(endpoint, None)
-
+    @blueprint.route(endpoint, methods=["GET", "POST"])
+    def _endpoint():
         if request.method == "GET":
-            return render_template(
-                "base.html",
-                inputs_template="tabular_inputs.html",
-                output_template="tabular_output.html",
-                inputs=[
-                    {"name": name, "html": field_to_html(field, name)}
-                    for name, field in ischema.fields.items()
-                ],
-            )
+            return render(endpoint, itype, otype)
 
+        inputs, backend = process_request(endpoint, itype)
+        inputs = process_inputs(endpoint, itype, inputs)
+        output = predict(**inputs)
+        output = process_output(endpoint, output)
+
+        if backend:
+            return output
+
+        if otype == "audio":
+            output["result"] = os.path.join(config.OUTPUT_FOLDER, output["result"])
+
+        return render(endpoint, itype, otype, inputs=inputs, output=output)
+
+    return predict
+
+
+def process_request(endpoint, itype):
+    if request.is_json:
         inputs = request.get_json()
-        json = True
+        return inputs, True
 
-        if not inputs:
-            inputs = request.form
-            json = False
+    # Web GUI input processing
+    # Standardize like the back-end
+    inputs = request.form  # .to_dict(flat=False)
 
-        if ischema:
-            inputs = ischema.load(inputs)
+    if itype == "image":
+        filename = process_image_request()
+        inputs["image"] = filename
+    if itype == "audio":
+        filename = process_audio_request()
+        inputs["audio"] = filename
 
-        output = func(**inputs)
-
-        if oschema:
-            output = oschema.dump(
-                {
-                    "result": output,
-                    "version": "0.0.1",
-                }
-            )
-
-        if not json:
-            return render_template(
-                "base.html",
-                inputs_template="tabular_inputs.html",
-                output_template="tabular_output.html",
-                inputs=[
-                    {
-                        "name": name,
-                        "html": field_to_html(
-                            field=field, name=name, value=inputs[name]
-                        ),
-                    }
-                    for name, field in ischema.fields.items()
-                ],
-                output=[
-                    {"name": name, "value": value} for name, value in output.items()
-                ],
-            )
-
-        return output
-
-    return func
+    return inputs, False
 
 
-def allowed_file(filename):
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in config.ALLOWED_EXTENSIONS
-    )
+def process_image_request():
+    return process_file_request("image")
 
 
-blue = Blueprint("main", __name__)
-blueprints.append(blue)
+def process_audio_request():
+    return process_file_request("audio")
 
 
-@blue.route("/image", methods=["GET", "POST"])
-def upload_file():
+def process_file_request(field):
 
-    if request.method == "GET":
-        return render_template(
-            "base.html",
-            inputs_template="image_inputs.html",
-            output_template="image_output.html",
-        )
-
-    if "file" not in request.files:
-        flash("No file part")
+    if field not in request.files:
+        flash("No file part found")
         return redirect(request.url)
 
-    file = request.files["file"]
+    file = request.files[field]
 
     if file.filename == "":
         flash("No file selected")
@@ -143,19 +105,74 @@ def upload_file():
         return redirect(request.url)
 
     filename = secure_filename(file.filename)
-    filepath = os.path.join(config.UPLOAD_FOLDER, filename)
+    filepath = os.path.join(config.INPUTS_FOLDER, filename)
 
     file.save(filepath)
 
-    return render_template(
-        "base.html",
-        inputs_template="image_inputs.html",
-        output_template="image_output.html",
-        inputs=file,
-        output=filepath,
+    return filename
+
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in config.ALLOWED_EXTENSIONS
     )
 
 
-@blue.route("/uploads/<filename>")
-def uploaded_file(filename):
-    return send_from_directory(f"../../{config.UPLOAD_FOLDER}", filename)
+def process_inputs(endpoint, itype, inputs):
+    ischema = ischemas.get(endpoint, None)
+
+    if ischema is not None:
+        inputs = ischema.load(inputs)
+
+    if itype == "image":
+        inputs["image"] = os.path.join(config.INPUTS_FOLDER, inputs["image"])
+    elif itype == "audio":
+        inputs["audio"] = os.path.join(config.INPUTS_FOLDER, inputs["audio"])
+
+    return inputs
+
+
+def process_output(endpoint, output):
+    oschema = oschemas.get(endpoint, None)
+    if oschema is not None:
+        output = oschema.dump(
+            {
+                "result": output,
+                "version": "0.0.1",
+            }
+        )
+    return output
+
+
+def field_to_dtype(field):
+    if isinstance(field, fields.Boolean):
+        return "boolean"
+    elif isinstance(field, fields.Number):
+        return "number"
+    else:
+        return "other"
+
+
+def render(endpoint, itype, otype, inputs={}, output={}):
+    ischema = ischemas.get(endpoint, {})
+    oschema = oschemas.get(endpoint, {})
+
+    return render_template(
+        "base.html",
+        inputs_template=f"inputs/{itype}.html",
+        output_template=f"output/{otype}.html",
+        inputs=[
+            {
+                "name": item,
+                "dtype": field_to_dtype(field),
+                "html": field_to_html(field, item),
+                "value": inputs.get(item, field.missing),
+            }
+            for item, field in ischema.fields.items()
+        ],
+        output=[
+            {"name": item, "value": output.get(item, field.default)}
+            for item, field in oschema.fields.items()
+        ],
+    )

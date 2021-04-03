@@ -1,0 +1,22 @@
+{# 
+    List of macros for fields in forms 
+#}
+
+{% macro boolean(name, value=False) -%}
+    <label for="chkbox1" class="mdl-checkbox mdl-js-checkbox">
+        <input type="checkbox" id="chkbox1" name="{{ name }}" class="mdl-checkbox__input">
+        <span class="mdl-checkbox__label">{{ name }}</span>
+    </label>
+{%- endmacro %}
+
+{% macro number(name, value=None) -%}
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input 
+            class="mdl-textfield__input" type="text" 
+            id="{{ name }}" name="{{ name }}"
+            pattern="-?[0-9]*(\.[0-9]+)?"
+        >
+        <label class="mdl-textfield__label" for="{{ name }}">{{ name }}</label>
+        <span class="mdl-textfield__error">Input should be a number</span>
+    </div>
+{%- endmacro %}

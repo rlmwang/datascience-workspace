@@ -1,8 +1,0 @@
-<form method="POST" enctype="multipart/form-data">
-    <p>
-        {% for field in inputs %}
-        {{ field.name }}: {{ field.html|safe }}<br>
-        {% endfor %}
-    </p>
-    <input type="submit" value="Predict">
-</form>

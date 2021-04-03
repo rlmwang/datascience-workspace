@@ -1,9 +1,9 @@
-## ignore all
+# ignore all
 **
 
-## exceptions
-!environment_dev.yaml
-!environment_prd.yaml
+# exceptions
+!requirements_dev.yaml
+!requirements_prd.yaml
 
 !/datascience/**
 !/models/prd/**

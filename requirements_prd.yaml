@@ -1,19 +1,18 @@
-name: datascience_dev
+name: datascience_prd
 channels:
   - conda-forge
 dependencies:
   - python=3.9
+  - pip
   
+  - librosa
+  - soundfile
+
   - click
   - python-dotenv>=0.5.1
-  - Sphinx
-  
+
   - flask
+  - flask-wtf
+  - wtforms
   - marshmallow
   - gunicorn
-
-  - pre-commit
-  - black
-  - isort
-  - flake8
-  - mypy

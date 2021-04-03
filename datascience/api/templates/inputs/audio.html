@@ -1,6 +1,11 @@
 <form method="POST" enctype="multipart/form-data">
     <p>
-        <input type="file" name="file" id="files" accept="image/*" value="{{ inputs }}">
+        <input 
+            type="file" 
+            id="files" 
+            name="audio" 
+            accept="audio/*"
+        />
     </p>
     <input type="submit" value="Upload">
 </form>
@@ -21,7 +26,7 @@
         reader.onload = (function(theFile) {
             return function(e) {
                 document.getElementById('list').innerHTML = [
-                    '<img src="', e.target.result,'" width="500"/>'
+                    '<audio controls><source src="', e.target.result,'"></audio>'
                 ].join('');
             };
         })(f);

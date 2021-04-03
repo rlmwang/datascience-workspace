@@ -1,22 +1,26 @@
+SHELL = /bin/sh
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
 
+NAME = datascience
 VER = temp
-PWD = `pwd`
 
-PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-PROJECT_NAME = datascience
+GID = $$(id -g)
+UID = $$(id -u)
+
+PWD = $$PWD
+PORT = 5000
 
 DOCKER_FILE_DEV = .docker/develop.dockerfile
 DOCKER_FILE_PRD = .docker/production.dockerfile
 DOCKER_FILE_FIN = .docker/release.dockerfile
 
-DOCKER_DEV = $(PROJECT_NAME)-dev
-DOCKER_PRD = $(PROJECT_NAME)-prd
-DOCKER_FIN = $(PROJECT_NAME)
+DOCKER_DEV = $(NAME)-dev
+DOCKER_PRD = $(NAME)-prd
+DOCKER_FIN = $(NAME)
 
-JUPYTER_PORT = 8888
+VOLUME = $$HOME/docker/$(NAME)
 
 
 #################################################################################
@@ -31,17 +35,17 @@ JUPYTER_PORT = 8888
 #################################################################################
 
 
-## Release
+## Build release version of project
 release: .docker/image-prd
-	rm -f release*.tar
+	rm -f datascience*.tar
 	docker build -t $(DOCKER_FIN):$(VER) -f $(DOCKER_FILE_FIN) .
-	docker save $(DOCKER_FIN):$(VER) > release_$(VER).tar
+	docker save $(DOCKER_FIN):$(VER) > $(NAME)_$(VER).tar
 .PHONY: release
 
 
-## Build dataset from source
+## Build dataset from source data
 data:
-	python $(PROJECT_NAME)/build_data.py data/source data/external data/processed
+	cd data/ && $(MAKE) all
 .PHONY: data
 
 
@@ -66,43 +70,78 @@ lint:
 .PHONY: lint
 
 
-## Run unit test cases
+## Run unit-test cases
 test: 
 	python -m unittest discover
 .PHONY: test
 
 
-## Set up conda environment
+## Setup conda environments (dev & prd)
 conda:
-	conda env create --force --file environment_dev.yaml
+	conda env create --force --file requirements_dev.yaml
+	conda env create --force --file requirements_prd.yaml
 .PHONY: conda
 
 
-## Build development docker image
+## Build docker image for development
 .docker/image-dev: $(DOCKER_FILE_DEV) .dockerignore
-	docker build -t $(DOCKER_DEV) -f $(DOCKER_FILE_DEV) .
+	docker build \
+		--build-arg GID=$(GID) \
+		--build-arg UID=$(UID) \
+		-t $(DOCKER_DEV) \
+		-f $(DOCKER_FILE_DEV)\
+		$(PWD)
 	touch .docker/image-dev
 
 
-## Run development docker container
-docker-dev: .docker/image-dev
-	docker run -it --rm \
-		--volume $(PWD):/work \
-		--publish $(JUPYTER_PORT):$(JUPYTER_PORT) \
-		--name $(DOCKER_DEV) $(DOCKER_DEV)
-.PHONY: docker-dev
-
-
-## Build production docker image
-.docker/image-prd:
-	docker build -t $(DOCKER_PRD) -f $(DOCKER_FILE_PRD) .
+## Build docker image for production
+.docker/image-prd: $(DOCKER_FILE_PRD) .dockerignore
+	docker build \
+		--build-arg GID=$(GID) \
+		--build-arg UID=$(UID) \
+		-t $(DOCKER_PRD) \
+		-f $(DOCKER_FILE_PRD) \
+		$(PWD)
 .PHONY: .docker/image-prd
 
 
-## Run production docker container
-docker-prd: .docker/image-prd
-	docker run -it --rm --name $(DOCKER_PRD) $(DOCKER_PRD)
+## Run docker container for development
+docker-dev: .docker/image-dev | $(VOLUME)
+	@echo "$(GID)"
+	docker run -it --rm \
+		--volume $(PWD):/work \
+		--volume $(VOLUME):/work/share \
+		--publish $(PORT):5000 \
+		--name $(DOCKER_DEV) \
+		$(DOCKER_DEV)
+.PHONY: docker-dev
+
+
+## Run docker container for production
+docker-prd: .docker/image-prd | $(VOLUME)
+	docker run -it --rm \
+		--name $(DOCKER_PRD) \
+		--volume $(VOLUME):/work/share \
+		--publish $(PORT):5000
+		$(DOCKER_PRD)
 .PHONY: docker-prd
+
+
+## Run docker container for release
+docker: release | $(VOLUME)
+	
+	docker run -it --rm \
+		--name $(DOCKER_FIN) \
+		--volume $(VOLUME):/work/share \
+		--publish $(PORT):5000 \
+		$(DOCKER_FIN):$(VER)
+
+.PHONY: docker
+
+
+## Setup docker volume permissions on host
+$(VOLUME):
+	mkdir -p $(VOLUME)/inputs $(VOLUME)/output
 
 
 #################################################################################

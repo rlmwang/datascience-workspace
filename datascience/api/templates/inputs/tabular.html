@@ -1,0 +1,24 @@
+{% import 'fields.html' as fields %}
+
+<form method="POST" enctype="multipart/form-data">
+    <ul class='mdl-list'>
+        {% for field in inputs %}
+        <li class="mdl-list__item">
+            <span class="mdl-list__item-primary-content">
+                {% if field.dtype == "boolean" %}
+                    {{ fields.boolean(field.name, value=field.value) }}
+                {% elif field.dtype == "number" %}
+                    {{ fields.number(field.name, value=field.value) }}
+                {% else %}
+                    {{ field.name }}: {{ field.html|safe }}
+                {% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+            type="submit"
+    >
+        Predict
+    </button> 
+</form>
