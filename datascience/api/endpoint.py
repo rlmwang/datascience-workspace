@@ -1,11 +1,11 @@
 import os
 
-from flask import Blueprint, flash, redirect, render_template, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from marshmallow import Schema, fields
 from werkzeug.utils import secure_filename
 
+from ..marshmallow import Categorical
 from . import config
-from .utils import field_to_html
 
 blueprints: list[Blueprint] = []
 ischemas: dict[str, Schema] = {}
@@ -37,10 +37,10 @@ def output(schema, endpoint):
 @decorator
 def endpoint(predict, endpoint, itype, otype):
 
-    blueprint = Blueprint(endpoint, __name__)
-    blueprints.append(blueprint)
+    blue = Blueprint(endpoint, __name__)
+    blueprints.append(blue)
 
-    @blueprint.route(endpoint, methods=["GET", "POST"])
+    @blue.route(endpoint, methods=["GET", "POST"])
     def _endpoint():
         if request.method == "GET":
             return render(endpoint, itype, otype)
@@ -150,6 +150,8 @@ def field_to_dtype(field):
         return "boolean"
     elif isinstance(field, fields.Number):
         return "number"
+    elif isinstance(field, Categorical):
+        return "categorical"
     else:
         return "other"
 
@@ -166,7 +168,6 @@ def render(endpoint, itype, otype, inputs={}, output={}):
             {
                 "name": item,
                 "dtype": field_to_dtype(field),
-                "html": field_to_html(field, item),
                 "value": inputs.get(item, field.missing),
             }
             for item, field in ischema.fields.items()
@@ -175,4 +176,39 @@ def render(endpoint, itype, otype, inputs={}, output={}):
             {"name": item, "value": output.get(item, field.default)}
             for item, field in oschema.fields.items()
         ],
+        sitemap=sitemap(),
     )
+
+
+blue = Blueprint("/sitemap", __name__)
+blueprints.append(blue)
+
+
+@blue.route("/sitemap", methods=["GET"])
+def sitemap():
+    rules = []
+
+    current = request.url_rule.rule
+
+    for rule in config.app.url_map.iter_rules():
+        if "GET" not in rule.methods:
+            continue
+        if not has_no_empty_params(rule):
+            continue
+
+        url = url_for(rule.endpoint, **(rule.defaults or {}))
+
+        if url == "/sitemap":
+            continue
+
+        active = "mdc-list-item--activated" if rule.rule in current else ""
+
+        rules.append((url, active))
+
+    return render_template("sitemap.html", rules=rules)
+
+
+def has_no_empty_params(rule):
+    defaults = rule.defaults if rule.defaults is not None else ()
+    arguments = rule.arguments if rule.arguments is not None else ()
+    return len(defaults) >= len(arguments)

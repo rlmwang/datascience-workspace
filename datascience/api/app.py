@@ -1,9 +1,6 @@
-from flask import Flask
-
 from .. import model  # noqa
-from . import endpoint
+from .config import app
+from .endpoint import blueprints
 
-app = Flask(__name__)
-
-for blueprint in endpoint.blueprints:
+for blueprint in blueprints:
     app.register_blueprint(blueprint)

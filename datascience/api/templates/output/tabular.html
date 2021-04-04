@@ -1,7 +1,11 @@
+<ul class="mdc-list">
+        
 {% for field in output %}
-<li class="mdl-list__item">
-    <span class="mdl-list__item-primary-content">
+<li class="mdc-list-item" tabindex="0">
+    <span class="mdc-list-item__ripple"></span>
+    <span class="mdc-list-item__text">
         {{ field.name }}: {{ field.value }}
     </span>
 </li>
 {% endfor %}
+<ul>

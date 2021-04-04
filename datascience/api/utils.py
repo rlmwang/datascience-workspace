@@ -11,22 +11,6 @@ def inputString(field, name, value=None):
     return f'<input type="text" name="{name}"{val}{req}>'
 
 
-def inputBoolean(field, name, value=False):
-    return f"{{ fields.boolean({name}, value={value}) }}"
-
-
-def inputFloat(field, name, value=None):
-    req = " required" if field.required else ""
-    val = f' value="{value}"' if value is not None else ""
-    return f'<input type="number" step="any" name="{name}"{val}{req}>'
-
-
-def inputInteger(field, name, value=None):
-    req = " required" if field.required else ""
-    val = f' value="{value}"' if value is not None else ""
-    return f'<input type="number" step=1 name="{name}"{val}{req}>'
-
-
 def inputDate(field, name, value=None):
     req = " required" if field.required else ""
     val = f' value="{value}"' if value is not None else ""
@@ -59,9 +43,6 @@ def inputUrl(field, name, value=None):
 
 _field_to_html = {
     fields.String: inputString,
-    fields.Boolean: inputBoolean,
-    fields.Float: inputFloat,
-    fields.Integer: inputInteger,
     fields.Date: inputDate,
     fields.DateTime: inputDatetime,
     fields.Time: inputTime,
