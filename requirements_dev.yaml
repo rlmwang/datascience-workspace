@@ -2,11 +2,11 @@ name: datascience_dev
 channels:
   - conda-forge
 dependencies:
+  - nodejs
+  - yarn
+  
   - python=3.9
   - pip
-
-  - librosa
-  - soundfile
 
   - click
   - python-dotenv>=0.5.1

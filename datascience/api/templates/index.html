@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>
+        {{ config["PROJECT"] }} @ {{ config["COMPANY"] }}
+    </title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
+
+    <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@material-ui/core@4.11.3/umd/material-ui.development.js"></script>
+    <srcipt src="https://unpkg.com/react-markdown@5.0.3/react-markdown.min.js"></srcipt>
+
+    <script type="text/label" src="/dynamic/js/config.js"></script>
+    <script type="text/babel" src="/static/js/drawer.js"></script>
+    <script type="text/babel" src="/static/js/appbar.js"></script>
+    <script type="text/babel" src="/static/js/cards.js"></script>
+    <script type="text/babel" src="/static/js/inputs.js"></script>
+    <script type="text/babel" src="/static/js/output.js"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" /> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+var CONFIG = {
+    COMPANY: '{{ config["COMPANY"] }}',
+    PROJECT: '{{ config["PROJECT"] }}',
+    VERSION: '{{ config["VERSION"] }}',
+    
+    EMAIL: '{{ config["EMAIL"] }}',
+    GITHUB: '{{ config["GITHUB"] }}',
+    WEBSITE: '{{ config["WEBSITE"] }}',
+    LINKEDIN: '{{ config["LINKEDIN"] }}',
+    
+    ENDPOINT: '{{ url_for(request.endpoint) }}',
+    INPUTS: JSON.parse('{{ inputs | tojson }}'),
+    OUTPUT: JSON.parse('{{ output | tojson }}'),
+    SITEMAP: JSON.parse('{{ sitemap | tojson }}'),
+}
+
+
+
+const {
+
+    colors,
+    CssBaseline,
+    ThemeProvider,
+    createMuiTheme,
+    useMediaQuery,
+    Container,
+    Box,
+    Grid,
+    Button,
+
+} = MaterialUI
+
+const {
+
+    useMemo,
+
+} = React
+
+
+
+
+const LightTheme = createMuiTheme({
+    palette: {
+        type: 'light',
+    },
+});
+
+const DarkTheme = createMuiTheme({
+    palette: {
+        type: 'dark',
+    },
+})
+
+
+
+function Root(props) {
+
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+    const theme = useMemo(() => 
+        prefersDarkMode ? DarkTheme : LightTheme, 
+        [prefersDarkMode]
+    )
+
+return (
+
+<ThemeProvider theme={theme}>
+<CssBaseline />
+
+<ElevationScroll>
+    <MainAppBar
+        endpoint={ CONFIG.ENDPOINT }
+        github={ CONFIG.GITHUB }
+        website={ CONFIG.WEBSITE }
+        email={ CONFIG.EMAIL }
+        linkedin={ CONFIG.LINKEDIN }
+        drawer={ <MainDrawer sitemap={ CONFIG.SITEMAP }/> }
+    />
+</ElevationScroll>
+<Toolbar />
+
+<Container>
+<Box my={2}>
+
+{ window.location.pathname == '/'
+? (
+
+    <div>
+        Home
+    </div>
+
+) : (
+    <Grid container spacing={1} direction="row">
+        <Grid item xs={12} md={6}>
+            <FormCard id="input">
+                { render_input(CONFIG.INPUTS) }
+            </FormCard>
+        </Grid>
+        <Grid item xs={12} lg={6}>
+            <Card id="output">
+                { render_output(CONFIG.OUTPUT) }
+            </Card>
+        </Grid>
+    </Grid>
+)}
+
+</Box>
+</Container>
+
+</ThemeProvider>
+
+)}
+
+ReactDOM.render(<Root />, document.querySelector('#root'));
+
+</script>
+</body>
+</html>
+

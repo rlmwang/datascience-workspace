@@ -1,214 +1,220 @@
 import os
+from typing import Any, Callable, TypeVar, overload
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from marshmallow import Schema, fields
 from werkzeug.utils import secure_filename
 
-from ..marshmallow import Categorical
 from . import config
+from .schemas import get_inputs_schema, get_output_schema
 
 blueprints: list[Blueprint] = []
-ischemas: dict[str, Schema] = {}
-oschemas: dict[str, Schema] = {}
 
 
-def decorator(deco):
-    def wrapper(*args, **kwargs):
-        def _deco(func):
-            return deco(func, *args, **kwargs)
-
-        return _deco
-
-    return wrapper
+F = TypeVar("F", bound=Callable[..., Any])
 
 
-@decorator
-def inputs(schema, endpoint):
-    ischemas[endpoint] = schema()
-    return schema
+def inputs(func, schema=None):
+    if schema is not None:
+        func.inputs_schema = schema
+    else:
+
+        def decorator(schema):
+            func.inputs_schema = schema
+            return schema
+
+        return decorator
 
 
-@decorator
-def output(schema, endpoint):
-    oschemas[endpoint] = schema()
-    return schema
+def output(func, schema=None):
+    if schema is not None:
+        func.output_schema = schema
+    else:
+
+        def decorator(schema):
+            func.output_schema = schema
+            return schema
+
+        return decorator
 
 
-@decorator
-def endpoint(predict, endpoint, itype, otype):
-
-    blue = Blueprint(endpoint, __name__)
-    blueprints.append(blue)
-
-    @blue.route(endpoint, methods=["GET", "POST"])
-    def _endpoint():
-        if request.method == "GET":
-            return render(endpoint, itype, otype)
-
-        inputs, backend = process_request(endpoint, itype)
-        inputs = process_inputs(endpoint, itype, inputs)
-        output = predict(**inputs)
-        output = process_output(endpoint, output)
-
-        if backend:
-            return output
-
-        if otype == "audio":
-            output["result"] = os.path.join(config.OUTPUT_FOLDER, output["result"])
-
-        return render(endpoint, itype, otype, inputs=inputs, output=output)
-
-    return predict
+# fmt: off
+@overload
+def route(func_endpoint: F) -> F: ...
+@overload
+def route(func_endpoint: str) -> Callable[[F], F]: ...
+# fmt: on
 
 
-def process_request(endpoint, itype):
-    if request.is_json:
-        inputs = request.get_json()
-        return inputs, True
+def route(func_endpoint):
+    """
+    The route to success!
+    """
 
-    # Web GUI input processing
-    # Standardize like the back-end
-    inputs = request.form  # .to_dict(flat=False)
+    def decorator(func: F) -> F:
 
-    if itype == "image":
-        filename = process_image_request()
-        inputs["image"] = filename
-    if itype == "audio":
-        filename = process_audio_request()
-        inputs["audio"] = filename
+        if isinstance(func_endpoint, str):
+            endpoint = func_endpoint
+        else:
+            endpoint = "/" + func.__name__
 
-    return inputs, False
+        blue = Blueprint(endpoint, __name__)
+        blueprints.append(blue)
+
+        @blue.route(endpoint, methods=["GET", "POST"])
+        def _route():
+            idict, ischema = get_inputs_schema(func)
+            odict, oschema = get_output_schema(func)
+
+            if request.method == "GET":
+                return render(request, idict, odict)
+
+            if request.is_json:
+                is_backend = True
+                inputs = request.get_json()
+            else:
+                is_backend = False
+
+                inputs = request.form
+                files = request.files
+                url = request.url
+
+                inputs = process_frontend(idict, inputs, files, url)
+
+            print("\n", inputs, "\n")
+
+            inputs = process_inputs(ischema, inputs)
+            output = func(**inputs)
+            output = process_output(oschema, output)
+
+            if is_backend:
+                return output
+
+            idict = merge_schema_values(idict, inputs)
+            odict = merge_schema_values(odict, output)
+
+            print("\n", idict, "\n", odict, "\n")
+
+            return render(request, idict, odict)
+
+        return func
+
+    if isinstance(func_endpoint, str):
+        return decorator
+    else:
+        return decorator(func_endpoint)
 
 
-def process_image_request():
-    return process_file_request("image")
+def process_inputs(ischema, values):
+    return ischema.load(values)
 
 
-def process_audio_request():
-    return process_file_request("audio")
+def process_output(oschema, values):
+    if not isinstance(values, tuple):
+        values = (values,)
+    return oschema.dump({field: value for field, value in zip(oschema.fields, values)})
 
 
-def process_file_request(field):
+def merge_schema_values(schema, values):
+    return {field: schema[field] | {"value": values[field]} for field in schema}
 
-    if field not in request.files:
+
+def process_frontend(ischema, inputs, files, url):
+    """
+    Handle any processing necessary to align the input from
+    the frontend with the expected input at the backend.
+    """
+    for name, meta in ischema.items():
+        dtype = meta["dtype"]
+
+        if dtype in ("file", "image", "audio", "video"):
+            inputs[name] = process_file(name, files, url)
+
+    return inputs
+
+
+def process_file(name, files, url):
+    """
+    Save file to shared folder on server, and return
+    the name of the file.
+    """
+
+    def allowed_file(filename):
+        if "." not in filename:
+            return False
+        ext = filename.rsplit(".", 1)[1].lower()
+        return ext in config.ALLOWED_EXTENSIONS
+
+    if name not in files:
         flash("No file part found")
-        return redirect(request.url)
+        return redirect(url)
 
-    file = request.files[field]
+    file = files[name]
 
-    if file.filename == "":
+    if not file.filename:
         flash("No file selected")
-        return redirect(request.url)
+        return redirect(url)
 
     if not allowed_file(file.filename):
         flash("File is not allowed")
-        return redirect(request.url)
+        return redirect(url)
 
     filename = secure_filename(file.filename)
     filepath = os.path.join(config.INPUTS_FOLDER, filename)
 
     file.save(filepath)
-
     return filename
 
 
-def allowed_file(filename):
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in config.ALLOWED_EXTENSIONS
-    )
-
-
-def process_inputs(endpoint, itype, inputs):
-    ischema = ischemas.get(endpoint, None)
-
-    if ischema is not None:
-        inputs = ischema.load(inputs)
-
-    if itype == "image":
-        inputs["image"] = os.path.join(config.INPUTS_FOLDER, inputs["image"])
-    elif itype == "audio":
-        inputs["audio"] = os.path.join(config.INPUTS_FOLDER, inputs["audio"])
-
-    return inputs
-
-
-def process_output(endpoint, output):
-    oschema = oschemas.get(endpoint, None)
-    if oschema is not None:
-        output = oschema.dump(
-            {
-                "result": output,
-                "version": "0.0.1",
-            }
-        )
-    return output
-
-
-def field_to_dtype(field):
-    if isinstance(field, fields.Boolean):
-        return "boolean"
-    elif isinstance(field, fields.Number):
-        return "number"
-    elif isinstance(field, Categorical):
-        return "categorical"
-    else:
-        return "other"
-
-
-def render(endpoint, itype, otype, inputs={}, output={}):
-    ischema = ischemas.get(endpoint, {})
-    oschema = oschemas.get(endpoint, {})
-
+def render(request, ischema, oschema):
     return render_template(
-        "base.html",
-        inputs_template=f"inputs/{itype}.html",
-        output_template=f"output/{otype}.html",
+        "index.html",
         inputs=[
             {
-                "name": item,
-                "dtype": field_to_dtype(field),
-                "value": inputs.get(item, field.missing),
+                "name": field,
+                "value": meta["value"],
+                "dtype": meta["dtype"],
+                "default": meta["default"],
             }
-            for item, field in ischema.fields.items()
+            for field, meta in ischema.items()
         ],
         output=[
-            {"name": item, "value": output.get(item, field.default)}
-            for item, field in oschema.fields.items()
+            {
+                "name": field,
+                "value": meta["value"],
+                "dtype": meta["dtype"],
+                "default": meta["default"],
+            }
+            for field, meta in oschema.items()
         ],
-        sitemap=sitemap(),
+        sitemap=sitemap(request),
     )
 
 
-blue = Blueprint("/sitemap", __name__)
-blueprints.append(blue)
+def sitemap(request):
 
-
-@blue.route("/sitemap", methods=["GET"])
-def sitemap():
     rules = []
-
     current = request.url_rule.rule
 
     for rule in config.app.url_map.iter_rules():
         if "GET" not in rule.methods:
             continue
-        if not has_no_empty_params(rule):
+        if has_empty_params(rule):
             continue
 
         url = url_for(rule.endpoint, **(rule.defaults or {}))
 
-        if url == "/sitemap":
-            continue
+        rules.append(
+            {
+                "url": url,
+                "name": url.strip("/") or "home",
+                "active": rule.rule == current,
+            }
+        )
 
-        active = "mdc-list-item--activated" if rule.rule in current else ""
-
-        rules.append((url, active))
-
-    return render_template("sitemap.html", rules=rules)
+    return rules
 
 
-def has_no_empty_params(rule):
+def has_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()
     arguments = rule.arguments if rule.arguments is not None else ()
-    return len(defaults) >= len(arguments)
+    return len(defaults) < len(arguments)

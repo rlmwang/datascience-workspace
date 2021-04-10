@@ -1,30 +1,21 @@
-from marshmallow import Schema, fields
-
-from .api.endpoint import endpoint, inputs, output
-from .marshmallow import Categorical
-
-model = [1, 2]
+from .api.endpoint import route
+from .api.typing import Categorical
 
 
-@endpoint("/predict", "tabular", "tabular")
-def predict(x: float, y: int, b: bool):
-    return x + b * y
+@route
+def predict(
+    formula: Categorical["addition", "multiplication"],
+    x: float,
+    y: int,
+) -> str:
+    print(formula, x, y)
+    if formula == "addition":
+        return x + y
+    elif formula == "multiplication":
+        return x * y
+    else:
+        return x ** y
 
 
-@inputs("/predict")
-class Inputs(Schema):
-    x = fields.Float(required=True)
-    y = fields.Float(missing=0)
-    c = Categorical(categories=["test 1", "test 3", "test 2"])
-
-    class Meta:
-        ordered = True
-
-
-@output("/predict")
-class Output(Schema):
-    result = fields.Float(default=0)
-    version = fields.String(default="latest")
-
-    class Meta:
-        ordered = True
+if __name__ == "__main__":
+    pass
