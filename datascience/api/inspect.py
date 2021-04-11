@@ -46,7 +46,8 @@ def inspect_output(func):
 
 
 def get_required(param):
-    return not hasattr(param, "default")
+    d = getattr(param, "default", Parameter.empty)
+    return d == Parameter.empty
 
 
 def get_default(param):

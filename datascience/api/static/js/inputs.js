@@ -1,29 +1,12 @@
 const { 
-    makeStyles,
-    useTheme,
-    TextField,
-    FormControlLabel,
-    Checkbox,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    KeyboardDatePicker,
-    MuiPickersUtilsProvider,
-    Input,
-    List,
-    ListItem,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    AccordionActions,
-    CardMedia,
+    makeStyles, useTheme, TextField, FormControlLabel, Checkbox,
+    FormControl, InputLabel, Select, MenuItem, KeyboardDatePicker,
+    MuiPickersUtilsProvider, Input, List, ListItem, Accordion,
+    AccordionSummary, AccordionDetails, AccordionActions, CardMedia,
 } = MaterialUI;
 
-const {
-    useState,
-    Fragment,
-} = React;
+
+const { useState, Fragment } = React;
 
 
 const TYPES = {
@@ -57,22 +40,18 @@ var inputs = {
 
 
 const render_input = metadata =>
-    metadata.map(meta => select_input(meta))
+    metadata.map(field => select_input(field))
 
 
-function select_input(meta) {
-    const dtype = meta.dtype.name
-    const func = TYPES[dtype] || TYPES['default']
-    return func(meta)
+function select_input(field) {
+    const dtype = field.dtype
+    const name = typeof dtype === "string" ? dtype : dtype.name
+    const func = TYPES[name] || TYPES['default']
+    return func(field)
 }
 
 
-function ArrayInput() {
-    return undefined
-}
-
-
-function StringInput({name}) {
+function StringInput({name, required}) {
     const {label, id} = get_labels(name, 'string')
 return (
     <Fragment>
@@ -80,29 +59,36 @@ return (
         id={ id }
         name={ label }  
         label={ label }
+        required={ required ? true : false }
     />
     <br/>
     </Fragment>
 )}
 
 
-function TextInput({name}) {
+function TextInput({name, required}) {
     const {label, id} = get_labels(name, 'text')
 return (
+    <Fragment>
     <TextField 
         id={ id }
         name={ label }  
         label={ label }
+        required={ required ? true : false }
         multiline
         rowsMax={4}
     />
+    <br/>
+    </Fragment>
 )}
 
 
-function IntegerInput({name}) {
+function IntegerInput({name, required}) {
     const {label, id} = get_labels(name, 'integer')
-    const [shrink, setShrink] = useState(false);
-    const [err, setErr] = useState(false);
+    const [shrink, setShrink] = useState(false)
+    const [err, setErr] = useState(false)
+
+    console.log(required)
 return (
     <Fragment>
     <TextField
@@ -113,7 +99,8 @@ return (
 
         id={ id } 
         name={ label }
-        label={ label }
+        label={ label } 
+        required={ required ? "true" : "false"}
 
         onFocus={ event => setShrink(true) }
 
@@ -134,7 +121,7 @@ return (
 )}
 
 
-function FloatInput({name}) {
+function FloatInput({name, required}) {
     const { label, id } = get_labels(name, 'float')
     const [shrink, setShrink] = useState(false);
     const [err, setErr] = useState(false);
@@ -149,6 +136,7 @@ return (
         id={ id }
         name={ label }
         label={ label }
+        required={ required ? true : false }
 
         onFocus={ () => setShrink(true) }
 
@@ -169,7 +157,7 @@ return (
 )}
 
 
-function BooleanInput({name}) { // TODO: reset has bugs
+function BooleanInput({name, required}) { // TODO: reset has bugs
     const { label, id } = get_labels(name, 'boolean')
     const classes = inputs.useStyles();
 return (
@@ -181,6 +169,7 @@ return (
             id={ id }
             name={ label }
             color="primary"
+            // TODO: required
             />
         }
     />
@@ -189,14 +178,15 @@ return (
 )} 
 
 
-function CategoricalInput({name, dtype}) {
+function CategoricalInput({name, dtype, required}) {
     const { label, id } = get_labels(name, 'categorical')
-    const classes = inputs.useStyles();
-    const categories = dtype.args || ["cat 1", "cat 2", "cat 3"];
+    const categories = dtype.args || ["cat 1", "cat 2", "cat 3"]
+    const classes = inputs.useStyles()
 return(
     <Fragment>
     <FormControl 
         className={ classes.formControl }
+        required={ required ? true : false }
     >
         <InputLabel id={ id + "-label" }>
             { label }
@@ -204,14 +194,14 @@ return(
         <Select
             id={ id }
             name={ label }
-            labelId= { id + "-label" }
+            labelId={ id + "-label" }
         >
         { categories.map( (cat, key) => {
                 return <MenuItem 
                     key={ key }
                     value={ key }
                 > 
-                { cat.name }
+                { cat }
                 </MenuItem>
         })}
         </Select>
@@ -221,14 +211,14 @@ return(
 )}
 
 
-function MultipleInput({name, dtype}) {
-    const [keys, setKeys] = useState([]);
+function MultipleInput({name, dtype, required}) {
+    const {label, id} = get_labels(name, 'multiple')
+    const categories = dtype.args || ["c1", "c2", "c3"]
     
-    const { label, id } = get_labels(name, 'categorical')
-    const classes = inputs.useStyles();
-    const theme = useTheme();
-    
-    const categories = dtype.args || ["c1", "c2", "c3"];
+    const [keys, setKeys] = useState([])
+
+    const theme = useTheme()
+    const classes = inputs.useStyles()
 
     const get_styles = (key, keys, theme) => ({
             fontWeight:
@@ -258,6 +248,7 @@ return (
     <Fragment>
     <FormControl 
         className={ classes.formControl }
+        required={ required ? true : false }
     >
         <InputLabel id={ id + "-label" }>
             { label }
@@ -291,7 +282,7 @@ return (
 )}
 
 
-function DateInput({name}){ // requires DateFnsUtils
+function DateInput({name, required}){ // requires DateFnsUtils
     const { label, id } = get_labels(name, 'date')
     const [date, setDate] = useState(new Date('2014-08-18T21:11:54'));
 return(
@@ -300,7 +291,7 @@ return(
         id={ id }
         name={ label }
         label={ label }
-
+        required={ required ? true : false }
         disableToolbar
         variant="inline"
         format="yyyy/MM/dd"
@@ -317,7 +308,7 @@ return(
 )}
 
 
-function EmailInput({name}){
+function EmailInput({name, required}){
     const { label, id } = get_labels(name, 'email')
     const [err, setErr] = useState(false)
 
@@ -331,6 +322,7 @@ return(
         id={ id }
         name={ label }
         label={ label }
+        required={ required ? true : false }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -338,7 +330,7 @@ return(
 )}
 
 
-function UrlInput({name}){
+function UrlInput({name, required}){
     const { label, id } = get_labels(name, 'url')
     const [err, setErr] = useState(false);
 
@@ -352,6 +344,7 @@ return(
         id={ id }
         name={ label }
         label={ label }
+        required={ required ? true : false }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -359,10 +352,11 @@ return(
 )}
 
 
-function ImageInput({name, multiple}) {
+function ImageInput({name, multiple, required}) {
     return FileInput({
         name: name,
         multiple: multiple,
+        required: required,
         dtype: "image",
         accept: "image/*",
         render_file: (file, url) => (
@@ -376,10 +370,11 @@ function ImageInput({name, multiple}) {
 }
 
 
-function AudioInput({name, multiple}) {
+function AudioInput({name, multiple, required}) {
     return FileInput({
         name: name,
         multiple: multiple,
+        required: required,
         dtype: "audio",
         accept: "audio/*",
         render_file: (file, url) => (
@@ -391,10 +386,11 @@ function AudioInput({name, multiple}) {
 }
 
 
-function VideoInput({name, multiple}) {
+function VideoInput({name, multiple, required}) {
     return FileInput({
         name: name,
         multiple: multiple,
+        required: required,
         dtype: "video",
         accept: "video/*",
         render_file: (file, url) => (
@@ -406,7 +402,7 @@ function VideoInput({name, multiple}) {
 }
 
 
-function FileInput({name, dtype, accept, multiple, render_file}) {
+function FileInput({name, dtype, accept, multiple, required, render_file}) {
     const {label, id} = get_labels(name, dtype)
     const [files, setFiles] = useState([])
     const [urls, setUrls] = useState([])
@@ -440,6 +436,7 @@ return [
             id={ id } 
             name={ name }
             label={ label }
+            required={ required ? true : false }
             accept= { accept } 
             multiple={ multiple }
             onChange={ on_change }
