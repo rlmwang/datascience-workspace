@@ -13,6 +13,9 @@ def index():
         sitemap=sitemap(request),
         inputs=[],
         output=[],
+        metadata={
+            "name": "Home",
+        },
     )
 
 

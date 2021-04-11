@@ -65,8 +65,13 @@ def route(func_endpoint):
             idict, ischema = get_inputs_schema(func)
             odict, oschema = get_output_schema(func)
 
+            metadata = {
+                "name": endpoint.strip("/"),
+                "doc": func.__doc__.strip("\n "),
+            }
+
             if request.method == "GET":
-                return render(request, idict, odict)
+                return render(request, metadata, idict, odict)
 
             if request.is_json:
                 is_backend = True
@@ -90,7 +95,7 @@ def route(func_endpoint):
             idict = merge_schema_values(idict, orig_inputs)
             odict = merge_schema_values(odict, output)
 
-            return render(request, idict, odict)
+            return render(request, metadata, idict, odict)
 
         return func
 
@@ -161,7 +166,8 @@ def process_file(name, files, url):
     return filename
 
 
-def render(request, ischema, oschema):
+def render(request, metadata, ischema, oschema):
+
     return render_template(
         "index.html",
         inputs=[
@@ -185,6 +191,7 @@ def render(request, ischema, oschema):
             for field, meta in oschema.items()
         ],
         sitemap=sitemap(request),
+        metadata=metadata,
     )
 
 

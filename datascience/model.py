@@ -5,9 +5,12 @@ from .api.typing import Categorical
 @route
 def predict(
     x: float,
-    y: int = None,
+    y: int,
     formula: Categorical["addition", "multiplication"] = None,
 ) -> str:
+    """
+    Frickin' [sic]
+    """
     if formula == "addition":
         return x + y
     elif formula == "multiplication":
