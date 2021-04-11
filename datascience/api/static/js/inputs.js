@@ -60,7 +60,7 @@ return (
         name={ label }  
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
     />
     <br/>
     </Fragment>
@@ -78,7 +78,7 @@ return (
         name={ label }  
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
     />
     <br/>
     </Fragment>
@@ -104,7 +104,7 @@ return (
         label={ label } 
 
         required={ required ? "true" : "false"}
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
 
         onFocus={ event => setShrink(true) }
 
@@ -143,7 +143,7 @@ return (
         name={ label }
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
 
         onFocus={ () => setShrink(true) }
 
@@ -205,7 +205,7 @@ return(
             id={ id }
             name={ label }
             labelId={ id + "-label" }
-            defaultValue={ value || (required ? null : defaultValue) }
+            defaultValue={ value !== null ? value : (required ? null : defaultValue) }
         >
         { required 
             ? null
@@ -226,7 +226,7 @@ return(
 )}
 
 
-function MultipleInput({name, dtype, required, defaultValue}) {
+function MultipleInput({name, value, dtype, required, defaultValue}) {
     const {label, id} = get_labels(name, 'multiple')
     const categories = dtype.args || ["c1", "c2", "c3"]
     
@@ -245,7 +245,7 @@ function MultipleInput({name, dtype, required, defaultValue}) {
     const render_value = keys => {
         let vals = []
         for (const key of keys) {
-            vals.push(cats[key])
+            vals.push(categories[key])
         }
         return vals.join(', ') 
     }
@@ -273,7 +273,8 @@ return (
             id={ id }
             name={ label }
             labelId= { id + "-label" }
-            defaultValue={ value || (required ? null : defaultValue) }
+            // TODO: fix default value
+            defaultValue={ value !== null ? value : (required ? null : defaultValue) }
 
             input={ <Input /> }
 
@@ -308,7 +309,7 @@ return(
         name={ label }
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
         disableToolbar
         variant="inline"
         format="yyyy/MM/dd"
@@ -340,7 +341,7 @@ return(
         name={ label }
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -363,7 +364,7 @@ return(
         name={ label }
         label={ label }
         required={ !!required }
-        defaultValue={ value || (required ? null : defaultValue) }
+        defaultValue={ value !== null ? value : (required ? null : defaultValue) }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }

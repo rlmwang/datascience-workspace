@@ -109,11 +109,16 @@ class Categorical(fd.Field):
 
 
 class Multiple(fd.Field):
+    def __init__(self, *args):
+        super().__init__()
+        self._type = tp.Multiple[args]
+
     def _serialize(self, value, attr, obj, **kwargs):
-        return value
+        return tuple(value.keys())
 
     def _deserialize(self, value, attr, data, **kwargs):
-        return value
+        values = (int(v) for v in value.split(","))
+        return self._type(*values)
 
 
 """

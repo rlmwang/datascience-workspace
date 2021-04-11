@@ -42,10 +42,10 @@ var CONFIG = {
     WEBSITE: '{{ config["WEBSITE"] }}',
     LINKEDIN: '{{ config["LINKEDIN"] }}',
     
-    ENDPOINT: '{{ url_for(request.endpoint) }}',
     INPUTS: JSON.parse('{{ inputs | tojson }}'),
     OUTPUT: JSON.parse('{{ output | tojson }}'),
     SITEMAP: JSON.parse('{{ sitemap | tojson }}'),
+    METADATA: JSON.parse('{{ metadata | tojson }}'),
 }
 
 
@@ -102,7 +102,7 @@ return (
 
 <ElevationScroll>
     <MainAppBar
-        endpoint={ CONFIG.ENDPOINT }
+        endpoint={ CONFIG.METADATA.name }
         github={ CONFIG.GITHUB }
         website={ CONFIG.WEBSITE }
         email={ CONFIG.EMAIL }
@@ -126,6 +126,9 @@ return (
     <Grid container spacing={1} direction="row">
         <Grid item xs={12} md={6}>
             <FormCard id="input">
+                <CardContent>
+                    { CONFIG.METADATA.doc }
+                </CardContent>
                 { render_input(CONFIG.INPUTS) }
             </FormCard>
         </Grid>

@@ -110,19 +110,63 @@ class Categorical:
 
 
 @TypeOrigin
-class Multiple(set[str]):
+class Multiple:
     """
     Multinominals are awesome, but hard to spell!
     """
 
-    def __post_init__(self, categories, *values):
-        categories = {str(c): True for c in categories}
-        values = set(str(v) for v in values)
+    def __init__(self, categories, *values):
+        # Categories are sorted unique lower case strings
+        # Categoricals are sets of integers refering to a subset of the category
+        categories = {str(c).lower(): True for c in categories}
+        self._cat_key = {cat: key for key, cat in enumerate(categories)}
+        self._key_cat = {key: cat for key, cat in enumerate(categories)}
 
-        assert all(v in categories for v in values)
-        self._categories = categories
+        if all(isinstance(v, int) for v in values):
+            self._keys = set()
+            for v in values:
+                if v < 0 or len(self._cat_key) <= v:
+                    raise ValueError
+                self._keys.add(v)
+        else:
+            values = (str(v).lower() for v in values)
+            self._keys = set(self._cat_key[v] for v in values)
 
-        super().__init__(values)
+    def __str__(self):
+        values = ", ".join(self.values())
+        return f"{{{values}}}"
+
+    def __repr__(self):
+        name = type(self).__name__
+        cats = ", ".join(self._cat_key)
+        values = ", ".join(self.values())
+        return f"{name}[{cats}]({values})"
+
+    def __eq__(self, other):
+        if all(isinstance(o, int) for o in other):
+            return self._keys == set(other)
+        return self._cat_keyues() == {str(o).lower() for o in other}
+
+    def __contains__(self, item):
+        if isinstance(item, int):
+            return item in self._keys
+        else:
+            return str(item).lower() in self.values()
+
+    def keys(self):
+        yield from self._keys
+
+    def values(self):
+        for key in self._keys:
+            yield self._key_cat[key]
+
+    def items(self):
+        for key in self._keys:
+            yield key, self._key_cat[key]
+
+    def categories(self):
+        for c in self._cat_key:
+            yield c
 
 
 """
@@ -146,3 +190,13 @@ classes = {
     "url": Url,
     "video": Video,
 }
+
+
+if __name__ == "__main__":
+
+    M = Multiple["a", "b", "c"]
+
+    print(M)
+    print("c" in M(0, 1))
+    print(repr(M(0, 1)))
+    print(M("a"))
