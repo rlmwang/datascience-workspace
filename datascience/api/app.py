@@ -1,8 +1,13 @@
 from flask import render_template, request
+from markdown import markdown
 
 from .. import model  # noqa
 from .config import app
 from .endpoint import blueprints, sitemap
+
+with open("./README.md", "r", encoding="utf-8") as file:
+    text = file.read()
+readme = markdown(text, extensions=["fenced_code"])
 
 
 @app.route("/", methods=["GET"])
@@ -13,9 +18,8 @@ def index():
         sitemap=sitemap(request),
         inputs=[],
         output=[],
-        metadata={
-            "name": "Home",
-        },
+        metadata={"name": "Home"},
+        readme=readme,
     )
 
 

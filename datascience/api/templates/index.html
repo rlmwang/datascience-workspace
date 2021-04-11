@@ -6,7 +6,7 @@
         {{ config["PROJECT"] }} @ {{ config["COMPANY"] }}
     </title>
 
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
 
     <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
@@ -24,12 +24,23 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" /> 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+
+    <style type="text/css">
+        pre 
+        {
+            white-space: pre-wrap;                 /* CSS3 browsers  */
+            white-space: -moz-pre-wrap !important; /* 1999+ Mozilla  */
+            white-space: -pre-wrap;                /* Opera 4 thru 6 */
+            white-space: -o-pre-wrap;              /* Opera 7 and up */
+            word-wrap: break-word;                 /* IE 5.5+ and up */
+        }
+    </style>
 </head>
 
-<body>
 
-<div id="root"></div>
 
+<body><div id="root"></div>
 <script type="text/babel">
 
 var CONFIG = {
@@ -71,8 +82,6 @@ const {
 } = React
 
 
-
-
 const LightTheme = createMuiTheme({
     palette: {
         type: 'light',
@@ -84,7 +93,6 @@ const DarkTheme = createMuiTheme({
         type: 'dark',
     },
 })
-
 
 
 function Root(props) {
@@ -119,7 +127,7 @@ return (
 ? (
 
     <div>
-        Home
+    {{ readme|safe }}
     </div>
 
 ) : (
