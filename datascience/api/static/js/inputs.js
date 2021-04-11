@@ -178,7 +178,7 @@ return (
 )} 
 
 
-function CategoricalInput({name, dtype, required}) {
+function CategoricalInput({name, dtype, required, defaultValue}) {
     const { label, id } = get_labels(name, 'categorical')
     const categories = dtype.args || ["cat 1", "cat 2", "cat 3"]
     const classes = inputs.useStyles()
@@ -187,7 +187,7 @@ return(
     <FormControl 
         className={ classes.formControl }
         required={ required ? true : false }
-    >
+        >
         <InputLabel id={ id + "-label" }>
             { label }
         </InputLabel>
@@ -195,14 +195,19 @@ return(
             id={ id }
             name={ label }
             labelId={ id + "-label" }
+            defaultValue={ required ? null : defaultValue }
         >
+        { required 
+            ? null
+            : <MenuItem value={ null }><em>None</em></MenuItem>
+        }
         { categories.map( (cat, key) => {
-                return <MenuItem 
-                    key={ key }
-                    value={ key }
-                > 
-                { cat }
-                </MenuItem>
+            return <MenuItem 
+                key={ key }
+                value={ key }
+            > 
+            { cat }
+            </MenuItem>
         })}
         </Select>
     </FormControl>

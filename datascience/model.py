@@ -6,7 +6,7 @@ from .api.typing import Categorical
 def predict(
     x: float,
     y: int,
-    formula: Categorical["addition", "multiplication"] = "addition",
+    formula: Categorical["addition", "multiplication"] = None,
 ) -> str:
     if formula == "addition":
         return x + y

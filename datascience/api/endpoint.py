@@ -169,8 +169,8 @@ def render(request, ischema, oschema):
                 "name": field,
                 "value": meta["value"],
                 "dtype": meta["dtype"],
-                "default": meta.get("default", None),
                 "required": meta.get("required", None),
+                "defaultValue": meta.get("default", None),
             }
             for field, meta in ischema.items()
         ],
@@ -179,8 +179,8 @@ def render(request, ischema, oschema):
                 "name": field,
                 "value": meta["value"],
                 "dtype": meta["dtype"],
-                "default": meta.get("default", None),
                 "required": meta.get("required", None),
+                "defaultValue": meta.get("default", None),
             }
             for field, meta in oschema.items()
         ],
