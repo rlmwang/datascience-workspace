@@ -8,6 +8,7 @@ from marshmallow import Schema
 from marshmallow import fields as fd
 
 from . import config
+from . import typing as tp
 from .inspect import inspect_inputs, inspect_output
 
 
@@ -36,8 +37,19 @@ def get_output_schema(func: Callable[..., Any]) -> tuple[dict, Schema]:
 
 
 def build_field(dtype):
-    field = FIELDS.get(dtype["name"], FIELDS["default"])
-    return field(*dtype["args"])
+
+    if isinstance(dtype, str):
+        func = FIELDS.get(dtype, None)
+        args = ()
+    elif isinstance(dtype, dict):
+        func = FIELDS.get(dtype["name"], None)
+        args = dtype["args"]
+    else:
+        func = None
+        args = ()
+
+    func = func or FIELDS["default"]
+    return func(*args)
 
 
 """
@@ -87,13 +99,13 @@ class Video(fd.Field):
 class Categorical(fd.Field):
     def __init__(self, *args):
         super().__init__()
-        self.categories = args
+        self._type = tp.Categorical[args]
 
     def _serialize(self, value, attr, obj, **kwargs):
-        return value
+        return int(value)
 
     def _deserialize(self, value, attr, data, **kwargs):
-        return value
+        return self._type(int(value))
 
 
 class Multiple(fd.Field):

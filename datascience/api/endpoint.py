@@ -70,29 +70,25 @@ def route(func_endpoint):
 
             if request.is_json:
                 is_backend = True
-                inputs = request.get_json()
+                orig_inputs = request.get_json()
             else:
                 is_backend = False
 
-                inputs = request.form
+                orig_inputs = request.form
                 files = request.files
                 url = request.url
 
-                inputs = process_frontend(idict, inputs, files, url)
+                orig_inputs = process_frontend(idict, orig_inputs, files, url)
 
-            print("\n", inputs, "\n")
-
-            inputs = process_inputs(ischema, inputs)
+            inputs = process_inputs(ischema, orig_inputs)
             output = func(**inputs)
             output = process_output(oschema, output)
 
             if is_backend:
                 return output
 
-            idict = merge_schema_values(idict, inputs)
+            idict = merge_schema_values(idict, orig_inputs)
             odict = merge_schema_values(odict, output)
-
-            print("\n", idict, "\n", odict, "\n")
 
             return render(request, idict, odict)
 
@@ -173,7 +169,8 @@ def render(request, ischema, oschema):
                 "name": field,
                 "value": meta["value"],
                 "dtype": meta["dtype"],
-                "default": meta["default"],
+                "default": meta.get("default", None),
+                "required": meta.get("required", None),
             }
             for field, meta in ischema.items()
         ],
@@ -182,7 +179,8 @@ def render(request, ischema, oschema):
                 "name": field,
                 "value": meta["value"],
                 "dtype": meta["dtype"],
-                "default": meta["default"],
+                "default": meta.get("default", None),
+                "required": meta.get("required", None),
             }
             for field, meta in oschema.items()
         ],
@@ -191,27 +189,36 @@ def render(request, ischema, oschema):
 
 
 def sitemap(request):
-
     rules = []
     current = request.url_rule.rule
 
     for rule in config.app.url_map.iter_rules():
+
         if "GET" not in rule.methods:
             continue
         if has_empty_params(rule):
             continue
 
-        url = url_for(rule.endpoint, **(rule.defaults or {}))
+        defaults = rule.defaults or {}
+        url = url_for(rule.endpoint, **defaults)
+        name = url.strip("/")
+
+        if not name:
+            continue
 
         rules.append(
             {
                 "url": url,
-                "name": url.strip("/") or "home",
+                "name": name,
                 "active": rule.rule == current,
             }
         )
 
-    return rules
+    rules.sort(key=(lambda x: x["name"]))
+
+    return [
+        {"url": "/", "name": "home", "active": current == "/"},
+    ] + rules
 
 
 def has_empty_params(rule):

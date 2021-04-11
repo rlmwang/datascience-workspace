@@ -69,12 +69,44 @@ class TypeOrigin:
 @TypeOrigin
 class Categorical:
     """
-    Categorical is awesome!
+    Categoricals are awesome!
     """
 
     def __init__(self, categories, value):
-        self.categories = {str(c): True for c in categories}
-        assert str(value) in categories
+        # Categories are sorted unique lower case strings
+        # Categoricals are integers refering to a category
+
+        categories = {str(c).lower(): True for c in categories}
+        categories = {c: k for k, c in enumerate(categories)}
+        self._categories = categories
+
+        if isinstance(value, int):
+            if (value < 0) or (len(categories) <= value):
+                raise ValueError
+            self._value = value
+        else:
+            self._value = categories[str(value).lower()]
+
+    def __int__(self):
+        return self._value
+
+    def __str__(self):
+        w = self._value
+        for c, v in self._categories.items():
+            if v == w:
+                return c
+
+    def __repr__(self):
+        return f"{type(self).__name__}[{', '.join(self._categories)}]({str(self)})"
+
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return int(self) == other
+        return str(self) == str(other).lower()
+
+    def categories(self):
+        for c in self._categories:
+            yield c
 
 
 @TypeOrigin
@@ -114,38 +146,3 @@ classes = {
     "url": Url,
     "video": Video,
 }
-
-
-if __name__ == "__main__":
-    from inspect import signature
-
-    print(Categorical.__doc__)
-
-    X = Categorical[1, 2]
-    Orig = get_origin(X)
-
-    assert isinstance(X, TypeAlias)
-    assert X.__name__ == "Categorical[1, 2]"
-    assert isinstance(Orig, TypeOrigin)
-    assert Orig.__name__ == "Categorical"
-    assert get_args(X) == (1, 2)
-
-    A = Categorical[1, 2]
-    B = Categorical[2, 1]
-    assert A != B
-
-    a = Categorical[1, 2](1)
-    b = Categorical[2, 1](1)
-    c = Categorical((1, 2), 1)
-    assert a == b
-    assert a == c
-
-    def f(x: Categorical["a", "b"], y: File) -> None:
-        pass
-
-    print(f"{signature(f)}\n")
-
-    X = Categorical["b", "a"]
-    print(X)
-    print(f"Origin: {get_origin(X)}")
-    print(f"Arguments: {get_args(X)}\n")

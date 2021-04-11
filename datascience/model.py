@@ -4,11 +4,10 @@ from .api.typing import Categorical
 
 @route
 def predict(
-    formula: Categorical["addition", "multiplication"],
     x: float,
     y: int,
+    formula: Categorical["addition", "multiplication"] = "addition",
 ) -> str:
-    print(formula, x, y)
     if formula == "addition":
         return x + y
     elif formula == "multiplication":
