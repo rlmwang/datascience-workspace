@@ -51,7 +51,7 @@ function select_input(field) {
 }
 
 
-function StringInput({name, required, defaultValue}) {
+function StringInput({name, value, required, defaultValue}) {
     const {label, id} = get_labels(name, 'string')
 return (
     <Fragment>
@@ -59,15 +59,15 @@ return (
         id={ id }
         name={ label }  
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
     />
     <br/>
     </Fragment>
 )}
 
 
-function TextInput({name, required, defaultValue}) {
+function TextInput({name, value, required, defaultValue}) {
     const {label, id} = get_labels(name, 'text')
 return (
     <Fragment>
@@ -77,17 +77,19 @@ return (
         id={ id }
         name={ label }  
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
     />
     <br/>
     </Fragment>
 )}
 
 
-function IntegerInput({name, required, defaultValue}) {
+function IntegerInput({name, value, required, defaultValue}) {
     const {label, id} = get_labels(name, 'integer')
-    const [shrink, setShrink] = useState(!required && defaultValue !== null)
+    const [shrink, setShrink] = useState(
+        value !== null || (!required && defaultValue !== null)
+    )
     const [err, setErr] = useState(false)
 return (
     <Fragment>
@@ -100,8 +102,9 @@ return (
         id={ id } 
         name={ label }
         label={ label } 
+
         required={ required ? "true" : "false"}
-        defaultValue={ required ? null : defaultValue }
+        defaultValue={ value || (required ? null : defaultValue) }
 
         onFocus={ event => setShrink(true) }
 
@@ -122,10 +125,12 @@ return (
 )}
 
 
-function FloatInput({name, required, defaultValue}) {
+function FloatInput({name, value, required, defaultValue}) {
     const { label, id } = get_labels(name, 'float')
-    const [shrink, setShrink] = useState(!required && defaultValue !== null);
-    const [err, setErr] = useState(false);
+    const [shrink, setShrink] = useState(
+        value !== null || (!required && defaultValue !== null)
+    )
+    const [err, setErr] = useState(false)
 return (
     <Fragment>
     <TextField 
@@ -137,8 +142,8 @@ return (
         id={ id }
         name={ label }
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
 
         onFocus={ () => setShrink(true) }
 
@@ -159,7 +164,8 @@ return (
 )}
 
 
-function BooleanInput({name, required, defaultValue}) { // TODO: reset has bugs
+function BooleanInput({name, value, required, defaultValue}) {
+    // TODO: reset
     const { label, id } = get_labels(name, 'boolean')
     const classes = inputs.useStyles();
 return (
@@ -171,6 +177,7 @@ return (
             id={ id }
             name={ label }
             color="primary"
+            // TODO: value
             // TODO: required
             // TODO: defaultValue
             />
@@ -181,7 +188,7 @@ return (
 )} 
 
 
-function CategoricalInput({name, dtype, required, defaultValue}) {
+function CategoricalInput({name, value, dtype, required, defaultValue}) {
     const { label, id } = get_labels(name, 'categorical')
     const categories = dtype.args || ["cat 1", "cat 2", "cat 3"]
     const classes = inputs.useStyles()
@@ -189,7 +196,7 @@ return(
     <Fragment>
     <FormControl 
         className={ classes.formControl }
-        required={ required ? true : false }
+        required={ !!required }
         >
         <InputLabel id={ id + "-label" }>
             { label }
@@ -198,7 +205,7 @@ return(
             id={ id }
             name={ label }
             labelId={ id + "-label" }
-            defaultValue={ required ? null : defaultValue }
+            defaultValue={ value || (required ? null : defaultValue) }
         >
         { required 
             ? null
@@ -256,7 +263,7 @@ return (
     <Fragment>
     <FormControl 
         className={ classes.formControl }
-        required={ required ? true : false }
+        required={ !!required }
     >
         <InputLabel id={ id + "-label" }>
             { label }
@@ -266,7 +273,7 @@ return (
             id={ id }
             name={ label }
             labelId= { id + "-label" }
-            defaultValue={ required ? null : defaultValue }
+            defaultValue={ value || (required ? null : defaultValue) }
 
             input={ <Input /> }
 
@@ -300,8 +307,8 @@ return(
         id={ id }
         name={ label }
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
         disableToolbar
         variant="inline"
         format="yyyy/MM/dd"
@@ -332,8 +339,8 @@ return(
         id={ id }
         name={ label }
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -355,8 +362,8 @@ return(
         id={ id }
         name={ label }
         label={ label }
-        required={ required ? true : false }
-        defaultValue={ required ? null : defaultValue }
+        required={ !!required }
+        defaultValue={ value || (required ? null : defaultValue) }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -448,7 +455,7 @@ return [
             id={ id } 
             name={ name }
             label={ label }
-            required={ required ? true : false }
+            required={ !!required }
             accept= { accept } 
             multiple={ multiple }
             onChange={ on_change }
