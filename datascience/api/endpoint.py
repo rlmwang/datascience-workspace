@@ -124,10 +124,13 @@ def process_frontend(ischema, inputs, files, url):
     Handle any processing necessary to align the input from
     the frontend with the expected input at the backend.
     """
+    inputs = dict(inputs)
     for name, meta in ischema.items():
         dtype = meta["dtype"]
 
-        if dtype in ("file", "image", "audio", "video"):
+        if dtype == "bool":
+            inputs[name] = name in inputs
+        elif dtype in ("file", "image", "audio", "video"):
             inputs[name] = process_file(name, files, url)
 
     return inputs

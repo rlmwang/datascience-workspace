@@ -7,7 +7,7 @@ def predict(
     foo: bool,
     x: float,
     y: int,
-    formula: Multiple["addition", "multiplication"] = None,
+    formula: Categorical["addition", "multiplication"] = None,
 ) -> str:
 
     """
@@ -18,9 +18,9 @@ def predict(
         return 9000
 
     res = []
-    if "addition" in formula:
+    if "addition" == formula:
         res.append(x + y)
-    if "multiplication" in formula:
+    if "multiplication" == formula:
         res.append(x * y)
     return res
 

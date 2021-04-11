@@ -164,10 +164,12 @@ return (
 )}
 
 
-function BooleanInput({name, value, required, defaultValue}) {
-    // TODO: reset
+function BooleanInput({name, value, defaultValue}) {
+    // TODO: reset ?!
     const { label, id } = get_labels(name, 'boolean')
-    const classes = inputs.useStyles();
+    const classes = inputs.useStyles()
+    const [checked, setChecked] = useState(value !== null ? value : !!defaultValue)
+
 return (
     <Fragment>
     <FormControlLabel
@@ -177,9 +179,8 @@ return (
             id={ id }
             name={ label }
             color="primary"
-            // TODO: value
-            // TODO: required
-            // TODO: defaultValue
+            checked={ checked }
+            onChange={ event => setChecked(event.target.checked) }
             />
         }
     />
