@@ -27,7 +27,7 @@ const GitHubIcon = () => (
 
 var appbar = {
 
-useStyles: makeStyles((theme) => ({
+useStyles: makeStyles( theme => ({
     root: {
         flexGrow: 1,
     },

@@ -8,5 +8,7 @@ const {
 
 const  render_output = metadata =>
     metadata.map( meta => 
-        <ListItem>{ meta.name }: { meta.value }</ListItem>
+        <ListItem key={ meta.name }>
+            { meta.name }: { meta.value }
+        </ListItem>
     )

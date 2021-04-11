@@ -13,19 +13,17 @@ const {
 
 
 var drawer = {
-
-useStyles: makeStyles((theme) => ({
-    list: {
-        width: 250,
-    },
-    fullList: {
-        width: 'auto',
-    },
-    menuButton: {
-        marginRight: theme.spacing(2),
-    },
-}))
-
+    useStyles: makeStyles((theme) => ({
+        list: {
+            width: 250,
+        },
+        fullList: {
+            width: 'auto',
+        },
+        menuButton: {
+            marginRight: theme.spacing(2),
+        },
+    }))
 }
 
 
@@ -37,7 +35,7 @@ function MainDrawer(props) {
         open: false,
     });
 
-    const toggleDrawer = (open) => (event) => {
+    const toggleDrawer = open => event => {
         if (
             event.type === 'keydown' 
             && (event.key === 'Tab' || event.key === 'Shift')

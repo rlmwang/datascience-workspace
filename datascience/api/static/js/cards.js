@@ -41,15 +41,15 @@ return (
     encType="multipart/form-data"
 >
 
-<BrokenCard 
+<Card 
     className={ classes.card }
-    stub={ CardContent }
+    // stub={ CardContent }
 >
-    <BreakPoint>
+    <CardContent>
 
         { children }
 
-    </BreakPoint>
+    </CardContent>
 
     <CardActions>
 
@@ -57,7 +57,7 @@ return (
             className={ classes.button }
             color="primary"
             type="reset"
-            >
+        >
             Reset
         </Button>
 
@@ -66,13 +66,13 @@ return (
             variant="contained"
             color="primary"
             type="submit"
-            >
+        >
             Predict
         </Button>    
 
     </CardActions>
 
-</BrokenCard>
+</Card>
 
 </form>
 
@@ -148,11 +148,11 @@ return (
 <Fragment>
 { chunked.map((chunk, key) => 
     key % 2 == 0 ? (
-        <CardContent>
+        <CardContent key={ key.toString() }>
             { chunk }
         </CardContent>
     ) : (
-        <Fragment>
+        <Fragment key={ key.toString() }>
             { chunk }
         </Fragment>
     )
