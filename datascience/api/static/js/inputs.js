@@ -51,7 +51,7 @@ function select_input(field) {
 }
 
 
-function StringInput({name, required}) {
+function StringInput({name, required, defaultValue}) {
     const {label, id} = get_labels(name, 'string')
 return (
     <Fragment>
@@ -60,35 +60,35 @@ return (
         name={ label }  
         label={ label }
         required={ required ? true : false }
+        defaultValue={ required ? null : defaultValue }
     />
     <br/>
     </Fragment>
 )}
 
 
-function TextInput({name, required}) {
+function TextInput({name, required, defaultValue}) {
     const {label, id} = get_labels(name, 'text')
 return (
     <Fragment>
     <TextField 
+        multiline
+        rowsMax={4}
         id={ id }
         name={ label }  
         label={ label }
         required={ required ? true : false }
-        multiline
-        rowsMax={4}
+        defaultValue={ required ? null : defaultValue }
     />
     <br/>
     </Fragment>
 )}
 
 
-function IntegerInput({name, required}) {
+function IntegerInput({name, required, defaultValue}) {
     const {label, id} = get_labels(name, 'integer')
-    const [shrink, setShrink] = useState(false)
+    const [shrink, setShrink] = useState(!required && defaultValue !== null)
     const [err, setErr] = useState(false)
-
-    console.log(required)
 return (
     <Fragment>
     <TextField
@@ -101,6 +101,7 @@ return (
         name={ label }
         label={ label } 
         required={ required ? "true" : "false"}
+        defaultValue={ required ? null : defaultValue }
 
         onFocus={ event => setShrink(true) }
 
@@ -121,9 +122,9 @@ return (
 )}
 
 
-function FloatInput({name, required}) {
+function FloatInput({name, required, defaultValue}) {
     const { label, id } = get_labels(name, 'float')
-    const [shrink, setShrink] = useState(false);
+    const [shrink, setShrink] = useState(!required && defaultValue !== null);
     const [err, setErr] = useState(false);
 return (
     <Fragment>
@@ -137,6 +138,7 @@ return (
         name={ label }
         label={ label }
         required={ required ? true : false }
+        defaultValue={ required ? null : defaultValue }
 
         onFocus={ () => setShrink(true) }
 
@@ -157,7 +159,7 @@ return (
 )}
 
 
-function BooleanInput({name, required}) { // TODO: reset has bugs
+function BooleanInput({name, required, defaultValue}) { // TODO: reset has bugs
     const { label, id } = get_labels(name, 'boolean')
     const classes = inputs.useStyles();
 return (
@@ -170,6 +172,7 @@ return (
             name={ label }
             color="primary"
             // TODO: required
+            // TODO: defaultValue
             />
         }
     />
@@ -216,7 +219,7 @@ return(
 )}
 
 
-function MultipleInput({name, dtype, required}) {
+function MultipleInput({name, dtype, required, defaultValue}) {
     const {label, id} = get_labels(name, 'multiple')
     const categories = dtype.args || ["c1", "c2", "c3"]
     
@@ -263,6 +266,7 @@ return (
             id={ id }
             name={ label }
             labelId= { id + "-label" }
+            defaultValue={ required ? null : defaultValue }
 
             input={ <Input /> }
 
@@ -287,7 +291,7 @@ return (
 )}
 
 
-function DateInput({name, required}){ // requires DateFnsUtils
+function DateInput({name, required, defaultValue}){ // requires DateFnsUtils
     const { label, id } = get_labels(name, 'date')
     const [date, setDate] = useState(new Date('2014-08-18T21:11:54'));
 return(
@@ -297,6 +301,7 @@ return(
         name={ label }
         label={ label }
         required={ required ? true : false }
+        defaultValue={ required ? null : defaultValue }
         disableToolbar
         variant="inline"
         format="yyyy/MM/dd"
@@ -313,7 +318,7 @@ return(
 )}
 
 
-function EmailInput({name, required}){
+function EmailInput({name, required, defaultValue}){
     const { label, id } = get_labels(name, 'email')
     const [err, setErr] = useState(false)
 
@@ -328,6 +333,7 @@ return(
         name={ label }
         label={ label }
         required={ required ? true : false }
+        defaultValue={ required ? null : defaultValue }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
@@ -335,7 +341,7 @@ return(
 )}
 
 
-function UrlInput({name, required}){
+function UrlInput({name, required, defaultValue}){
     const { label, id } = get_labels(name, 'url')
     const [err, setErr] = useState(false);
 
@@ -350,6 +356,7 @@ return(
         name={ label }
         label={ label }
         required={ required ? true : false }
+        defaultValue={ required ? null : defaultValue }
         error={ err }
         helperText={ text }
         onBlur={ on_blur }
