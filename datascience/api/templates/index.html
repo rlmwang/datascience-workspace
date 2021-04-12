@@ -7,7 +7,21 @@
     </title>
 
     <meta charset="utf-8"/>
+    <link rel="icon" type="image/png" href="/static/assets/favicon-48.png" />
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width"/>
+
+    <style type="text/css">
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #121212;
+            }
+        }
+        @media (prefers-color-scheme: light) {
+            body {
+                background: #ffffff;
+            }
+        }
+    </style>
 
     <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
@@ -24,19 +38,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" /> 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-
-    <style type="text/css">
-        pre 
-        {
-            white-space: pre-wrap;                 /* CSS3 browsers  */
-            white-space: -moz-pre-wrap !important; /* 1999+ Mozilla  */
-            white-space: -pre-wrap;                /* Opera 4 thru 6 */
-            white-space: -o-pre-wrap;              /* Opera 7 and up */
-            word-wrap: break-word;                 /* IE 5.5+ and up */
-        }
-    </style>
 </head>
-
 
 
 <body><div id="root"></div>
@@ -59,9 +61,7 @@ var CONFIG = {
 }
 
 
-
 const {
-
     colors,
     CssBaseline,
     ThemeProvider,
@@ -71,43 +71,59 @@ const {
     Box,
     Grid,
     Button,
-
 } = MaterialUI
 
-const {
-
-    useMemo,
-
-} = React
+const { useMemo } = React
 
 
-const LightTheme = createMuiTheme({
-    palette: {
-        type: 'light',
-    },
-});
-
-const DarkTheme = createMuiTheme({
-    palette: {
-        type: 'dark',
-    },
-})
+const theme = mode => createMuiTheme(
+    mode == 'dark' 
+    ? {
+        palette: {
+            type: 'dark',
+            background: {
+                default: '#121212',
+                paper: '#1E1E1E',
+            },
+            primary: {
+                main: '#BB86FC',
+            },
+            secondary: {
+                main: '#03DAC5',
+            },
+            error: {
+                main: '#CF6679',
+            },
+        },
+    } 
+    : {
+        palette: {
+            type: 'light',
+            background: {
+                default: '#FFFFFF',
+                paper: '#FFFFFF',
+            },
+            primary: {
+                main: '#6200EE',
+            },
+            secondary: {
+                main: '#03DAC6',
+            },
+            error: {
+                main: '#B00020',
+            },
+        },
+    }
+)
 
 
 function Root(props) {
-
-    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-    const theme = useMemo(() => 
-        prefersDarkMode ? DarkTheme : LightTheme, 
-        [prefersDarkMode]
-    )
-
+    const darkMode = useMediaQuery('(prefers-color-scheme: dark)')
+    const mode = useMemo(() => darkMode ? "dark" : "light", [darkMode])
 return (
 
-<ThemeProvider theme={theme}>
-<CssBaseline />
-
-<ElevationScroll>
+<ThemeProvider theme={theme(mode)}>
+<CssBaseline/>
     <MainAppBar
         endpoint={ CONFIG.METADATA.name }
         github={ CONFIG.GITHUB }
@@ -116,31 +132,40 @@ return (
         linkedin={ CONFIG.LINKEDIN }
         drawer={ <MainDrawer sitemap={ CONFIG.SITEMAP }/> }
     />
-</ElevationScroll>
-<Toolbar />
-
 <Container>
 <Box my={2}>
 
 { window.location.pathname == '/'
 ? (
 
-    <div>
-    {{ readme|safe }}
-    </div>
+    <Card>
+    <CardContent>
+        {{ readme|safe }}
+    </CardContent>
+    </Card>
 
 ) : (
-    <Grid container spacing={1} direction="row">
-        <Grid item xs={12} md={6}>
-            <FormCard id="input">
-                <CardContent>
+    <Grid 
+        container spacing={1} 
+        direction="row"
+    >
+        <Grid item 
+            xs={12} 
+            md={6}
+        >
+            <FormCard>
+                <CardHeader>
                     { CONFIG.METADATA.doc }
-                </CardContent>
-                { render_input(CONFIG.INPUTS) }
+                </CardHeader>
+                    { render_input(CONFIG.INPUTS) }
             </FormCard>
         </Grid>
-        <Grid item xs={12} lg={6}>
-            <Card id="output">
+
+        <Grid item
+            xs={12} 
+            lg={6} 
+        >
+            <Card>
                 { render_output(CONFIG.OUTPUT) }
             </Card>
         </Grid>
@@ -149,12 +174,11 @@ return (
 
 </Box>
 </Container>
-
 </ThemeProvider>
 
 )}
 
-ReactDOM.render(<Root />, document.querySelector('#root'));
+ReactDOM.render(<Root key="root"/>, document.querySelector('#root'));
 
 </script>
 </body>

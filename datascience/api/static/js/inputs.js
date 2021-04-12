@@ -62,11 +62,12 @@ return (
         defaultValue={ get_default(value, required, defaultValue) }
     />
     <br/>
+    <br />
     </Fragment>
 )}
 
 
-function TextInput({name, value, required, defaultValue, key_prefix}) {
+function TextInput({name, value, required, defaultValue}) {
     const {label, id} = get_labels(name, 'text')
 return (
     <Fragment key={ id }>
@@ -80,18 +81,19 @@ return (
         defaultValue={ get_default(value, required, defaultValue) }
     />
     <br/>
+    <br />
     </Fragment>
 )}
 
 
-function IntegerInput({name, value, required, defaultValue, key_prefix}) {
+function IntegerInput({name, value, required, defaultValue}) {
     const {label, id} = get_labels(name, 'integer')
     const [shrink, setShrink] = useState(
         value !== null || (!required && defaultValue !== null)
     )
     const [err, setErr] = useState(false)
 return (
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <TextField
         type='number' 
         inputProps={{
@@ -119,18 +121,19 @@ return (
             shrink: shrink,
         }}
     />
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
-function FloatInput({name, value, required, defaultValue, key_prefix}) {
+function FloatInput({name, value, required, defaultValue}) {
     const { label, id } = get_labels(name, 'float')
     const [shrink, setShrink] = useState(
         value !== null || (!required && defaultValue !== null)
     )
     const [err, setErr] = useState(false)
 return (
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <TextField 
         type='number' 
         inputProps={{
@@ -157,18 +160,19 @@ return (
             shrink: shrink,
         }}
     />
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
-function BooleanInput({name, value, defaultValue, key_prefix}) {
+function BooleanInput({name, value, defaultValue}) {
     // TODO: reset ?!
     const { label, id } = get_labels(name, 'boolean')
     const classes = inputs.useStyles()
     const [checked, setChecked] = useState(value !== null ? value : !!defaultValue)
 
 return (
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <FormControlLabel
         label={ label }
         control={
@@ -181,16 +185,17 @@ return (
             />
         }
     />
-    </ListItem>
+    <br />
+    </Fragment>
 )} 
 
 
-function CategoricalInput({name, value, dtype, required, defaultValue, key_prefix}) {
+function CategoricalInput({name, value, dtype, required, defaultValue}) {
     const { label, id } = get_labels(name, 'categorical')
     const categories = dtype.args || ["cat 1", "cat 2", "cat 3"]
     const classes = inputs.useStyles()
 return(
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <FormControl 
         className={ classes.formControl }
         required={ !!required }
@@ -206,7 +211,7 @@ return(
         >
         { required 
             ? null
-            : <MenuItem value={ null }><em>None</em></MenuItem>
+            : <MenuItem value={ null }><em>none</em></MenuItem>
         }
         { categories.map( (cat, key) => {
             return <MenuItem 
@@ -218,7 +223,8 @@ return(
         })}
         </Select>
     </FormControl>
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
@@ -256,7 +262,7 @@ function MultipleInput({name, value, dtype, required, defaultValue}) {
     })
 
 return (
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <FormControl 
         className={ classes.formControl }
         required={ !!required }
@@ -290,7 +296,8 @@ return (
         ))}
         </Select>
     </FormControl>
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
@@ -331,7 +338,7 @@ function EmailInput({name, required, defaultValue}){
     }
     const text = err ? 'Invalid e-mail address' : ''
 return(
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <TextField type='email'
         id={ id }
         name={ label }
@@ -342,7 +349,8 @@ return(
         helperText={ text }
         onBlur={ on_blur }
     />
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
@@ -356,7 +364,7 @@ function UrlInput({name, required, defaultValue}){
     }
     const text = err ? 'invalid URL' : ''
 return(
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <TextField type='text'
         id={ id }
         name={ label }
@@ -367,7 +375,8 @@ return(
         helperText={ text }
         onBlur={ on_blur }
     />
-    </ListItem>
+    <br />
+    </Fragment>
 )}
 
 
@@ -443,12 +452,13 @@ function FileInput({name, dtype, accept, multiple, required, render_file}) {
         reader.readAsDataURL(file)
     }
 return [
-    <ListItem key={ id }>
+    <Fragment key={ id }>
     <Button
         className={ classes.button }
         variant="contained"
+        color="secondary"
         component="label"
-        >
+    >
         { label }
         <input type="file"
             hidden 
@@ -461,7 +471,8 @@ return [
             onChange={ on_change }
         />
     </Button>
-    </ListItem>
+    <br />
+    </Fragment>
 ,
     files.length !== 0 && (
         <BreakCard>

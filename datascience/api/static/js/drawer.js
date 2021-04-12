@@ -11,11 +11,12 @@ const {
 
 } = MaterialUI
 
+const drawerWidth = 250
 
 var drawer = {
-    useStyles: makeStyles((theme) => ({
+    useStyles: makeStyles( theme => ({
         list: {
-            width: 250,
+            width: drawerWidth,
         },
         fullList: {
             width: 'auto',
@@ -23,17 +24,20 @@ var drawer = {
         menuButton: {
             marginRight: theme.spacing(2),
         },
+        toolbar: theme.mixins.toolbar,
+            drawerPaper: {
+                width: drawerWidth,
+        },
     }))
 }
 
 
-function MainDrawer(props) {
+function MainDrawer({sitemap}) {
     const classes = drawer.useStyles()
-    const { sitemap } = props
+    const theme = useTheme()
+    const dark = theme.palette.type == "dark"
 
-    const [state, setState] = React.useState({
-        open: false,
-    });
+    const [state, setState] = React.useState({open: false});
 
     const toggleDrawer = open => event => {
         if (
@@ -52,8 +56,8 @@ function MainDrawer(props) {
             onClick={ toggleDrawer(false) }
             onKeyDown={ toggleDrawer(false) }
         >
-
-        
+        <div className={ classes.toolbar } />
+        <Divider />
         <List>
         { sitemap.map( item => (
 
@@ -88,7 +92,7 @@ return (
     className={ classes.menuButton } 
     onClick={ toggleDrawer(true) }
     edge="start" 
-    color="inherit" 
+    color="inherit"
     aria-label="menu"
 >
     <Icon> menu </Icon>
@@ -101,6 +105,7 @@ return (
 >
     <Divider />
     { list }
+    
 </Drawer>
 </div>
 

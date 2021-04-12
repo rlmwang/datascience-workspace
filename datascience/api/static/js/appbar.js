@@ -8,7 +8,7 @@ const {
     Button,
     SvgIcon,
     useScrollTrigger,
-} = MaterialUI;
+} = MaterialUI
 
 
 const LinkInIcon = () => (
@@ -26,68 +26,62 @@ const GitHubIcon = () => (
 
 
 var appbar = {
-
-useStyles: makeStyles( theme => ({
-    root: {
-        flexGrow: 1,
-    },
-    title: {
-        flexGrow: 1,
-    },
-}))
-
+    useStyles: makeStyles( theme => ({
+        root: {
+            flexGrow: 1,
+        },
+        title: {
+            flexGrow: 1,
+        },
+    }))
 };
 
 
-function ElevationScroll(props) {
-    const { children } = props;
-
+function ElevationScroll({ children, window }) {
     const trigger = useScrollTrigger({
         disableHysteresis: true,
         threshold: 0,
-    });
-
+        target: window ? window() : undefined,
+    })
     return React.cloneElement(children, {
         elevation: trigger ? 4 : 0,
-    });
+    })
 }
 
 
 function MainAppBar(props) {
-
-    const classes = appbar.useStyles();
+    const classes = appbar.useStyles()
+    const theme = useTheme()
+    
+    const dark = theme.palette.type == "dark"
 
     const { 
         endpoint,
-        linkedin,
         email,
         website,
         github,
         drawer,
     } = props
 
-return (
+    const capitalize = w => (w.charAt(0).toUpperCase() + w.slice(1))
 
-<AppBar>
+return (
+<div>
+<ElevationScroll>
+<AppBar 
+    color={ dark ? "inherit" : "primary" }
+>
 <Toolbar>
 
     { drawer }
 
     <Typography 
         className={ classes.title }
+        color="inherit"
         variant="h6" 
     >
-        { endpoint.replace(/^\/+/g,'') || 'Home' }
+        { endpoint.replace(/^\/+/g,'').replace(/\b\w/g, capitalize) || 'Home' }
     </Typography>
-
-    <IconButton
-        edge="end"
-        color="inherit"
-        aria-label="linkedin"
-        href={ linkedin }
-    >
-        <LinkInIcon />
-    </IconButton>
 
     <IconButton
         edge="end"
@@ -109,7 +103,7 @@ return (
 
     <IconButton
         edge="end"
-        color="inherit"
+        color={ dark ? "secondary" : "inherit" }
         aria-label="github"
         href={ github }
     >
@@ -118,5 +112,7 @@ return (
 
 </Toolbar>
 </AppBar>
-
+</ElevationScroll>
+<Toolbar/>
+</div>
 )}

@@ -8,16 +8,19 @@ const {
 } = MaterialUI;
 
 
+const inputWidth = '40ch'
+
+
 var cards = {
 
-useStyles: makeStyles((theme) => ({
+useStyles: makeStyles( theme => ({
     card: {
         minWidth: 225,
+        '& .MuiTextField-root': {
+            width: inputWidth,
+        },
     },
     form: {
-        '& > .MuiTextField': {
-          width: '40ch',
-        },
     },
     button: {
         marginLeft: 'auto'

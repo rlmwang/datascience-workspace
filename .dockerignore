@@ -9,4 +9,5 @@
 !/models/prd/**
 !/test/**
 !/api/**
+!README.md
 !*.py
