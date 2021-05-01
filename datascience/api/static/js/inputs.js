@@ -19,6 +19,7 @@ const TYPES = {
     float: FloatInput,
     image: ImageInput,
     int: IntegerInput,
+    list: ListInput,
     multiple: MultipleInput,
     str: StringInput,
     text: TextInput,
@@ -48,6 +49,28 @@ function select_input(field) {
     const func = TYPES[name] || TYPES['default']
     return func(field)
 }
+
+
+
+function ListInput({name, value, required, defaultValue}) {
+    const {label, id} = get_labels(name, 'string')
+    const [values, setValues] = useState([1,2,3])
+    const Input = StringInput
+return (
+    <Fragment key={ id }>
+    <List>
+    { values.map( val => (
+        <ListItem key={ val.toString() }>
+        <StringInput
+            value={ val }
+        />
+        </ListItem>
+    ))}
+    </List>
+    <br />
+    </Fragment>
+)}
+
 
 
 function StringInput({name, value, required, defaultValue}) {
